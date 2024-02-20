@@ -1,0 +1,12 @@
+[submodule "thrid_party/libevent"]
+	path = thrid_party/libevent
+	url = git@github.com:libevent/libevent.git
+[submodule "thrid_party/openssl"]
+	path = thrid_party/openssl
+	url = git@github.com:openssl/openssl.git
+[submodule "thrid_party/fmt"]
+	path = thrid_party/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "thrid_party/libcgroup"]
+	path = thrid_party/libcgroup
+	url = git@github.com:libcgroup/libcgroup.git
