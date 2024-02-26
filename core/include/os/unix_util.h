@@ -8,8 +8,11 @@ extern "C" {
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 }
+
 #include <string>
+#include <fstream>
 #include "build_expect.h"
 #include "os/unix_timestamp.h"
 namespace Core {
@@ -75,7 +78,7 @@ static inline ssize_t system_write(const std::string &level, const std::string &
     std::string data;
     UnixTimestamp time;
     data = data + time.toMicroDate() + " [level:" + level + "]" + " content: " + message + ";errno:" + std::to_string(errno) + ";errmsg:" +
-            strerror(errno) + "\n";
+           strerror(errno) + "\n";
     std::cerr << data << std::endl;
     int writeFd = open("/var/log/agent-error.log", O_CREAT | O_RDWR | O_APPEND, 0664);
     ssize_t res = writen(writeFd, (void *) data.c_str(), data.size());
