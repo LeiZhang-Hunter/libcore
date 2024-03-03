@@ -3,6 +3,8 @@
 #include <string>
 #include <utility>
 #include <map>
+#include "non_copyable.h"
+#include "non_moveable.h"
 #include "pure.h"
 
 namespace Core::Component {
@@ -88,7 +90,7 @@ class Consumer :public Noncopyable, Nonmoveable {
 public:
     virtual Result Consume(Batch batch) PURE;
 
-    virtual Channel* channel() PURE:
+    virtual Channel* channel() PURE;
 };
 
 }
