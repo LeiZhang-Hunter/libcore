@@ -2,6 +2,7 @@
 
 #include <string>
 #include <utility>
+#include <memory>
 #include <map>
 #include "non_copyable.h"
 #include "non_moveable.h"
