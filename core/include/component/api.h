@@ -91,6 +91,8 @@ public:
     virtual Result Consume(Batch batch) PURE;
 
     virtual Channel* channel() PURE;
+
+    virtual bool bindChannel() PURE;
 };
 
 }
