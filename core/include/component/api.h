@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <utility>
+#include <map>
 #include "pure.h"
 
 namespace Core::Component {
@@ -29,5 +31,55 @@ public:
 
 class BaseConfig :public ConfigListener {
 
+};
+
+typedef enum {
+    FAIL,
+    SUCCESS,
+    TIMEOUT,
+    DROP
+} Status;
+
+
+class Result {
+public:
+    Status status() {
+        return status_;
+    }
+    void changeStatusTo(Status status) {
+        status_ = status;
+    }
+    std::string error() {
+        return message_;
+    }
+
+    void setErrorInfo(std::string message) {
+        message_ = std::move(message);
+    }
+private:
+    Status status_;
+    std::string message_;
+};
+
+class Event {
+public:
+    virtual std::map<std::string, std::string> meta() PURE;
+    virtual std::map<std::string, std::string> header() PURE;
+    virtual void* data() PURE;
+    // Fill event with meta,header,body cannot be nil
+    virtual void  fill(const std::map<std::string, std::string>& meta, const std::map<std::string, std::string>& header, void* data) PURE;
+    virtual void release() PURE;
+};
+
+class Batch :public Nonmoveable, Noncopyable {
+public:
+    virtual std::map<std::string, std::string> meta() PURE;
+    virtual std::vector<Event> events() PURE;
+    virtual void Release() PURE;
+};
+
+class Consumer :public Noncopyable, Nonmoveable {
+public:
+    virtual Result Consume(Batch batch) PURE;
 };
 }
