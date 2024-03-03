@@ -78,8 +78,17 @@ public:
     virtual void Release() PURE;
 };
 
+class Channel :public Nonmoveable, Noncopyable{
+public:
+    virtual void product(Event e) PURE;
+};
+
+
 class Consumer :public Noncopyable, Nonmoveable {
 public:
     virtual Result Consume(Batch batch) PURE;
+
+    virtual Channel* channel() PURE:
 };
+
 }
