@@ -4,6 +4,7 @@
 #include <utility>
 #include <memory>
 #include <map>
+#include <vector>
 #include "non_copyable.h"
 #include "non_moveable.h"
 #include "pure.h"
@@ -83,7 +84,7 @@ public:
 
 class Channel :public Nonmoveable, Noncopyable{
 public:
-    virtual void product(Event e) PURE;
+    virtual void product(std::shared_ptr<Event>& e) PURE;
 };
 
 
