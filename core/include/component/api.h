@@ -60,16 +60,16 @@ public:
     void setErrorInfo(std::string message) {
         message_ = std::move(message);
     }
-private:
-    Status status_;
+    Status status_ = SUCCESS;
     std::string message_;
 };
 
-class Event {
+class EventData {
 public:
     virtual std::map<std::string, std::string> meta() PURE;
     virtual std::map<std::string, std::string> header() PURE;
     virtual void* data() PURE;
+    virtual std::string name() PURE;
     // Fill event with meta,header,body cannot be nil
     virtual void  fill(const std::map<std::string, std::string>& meta, const std::map<std::string, std::string>& header, void* data) PURE;
     virtual void release() PURE;
@@ -78,23 +78,25 @@ public:
 class Batch :public Nonmoveable, Noncopyable {
 public:
     virtual std::map<std::string, std::string> meta() PURE;
-    virtual std::vector<Event> events() PURE;
+    virtual std::vector<EventData>& events() PURE;
     virtual void Release() PURE;
 };
 
-class Channel :public Nonmoveable, Noncopyable{
+class Queue :public Nonmoveable, Noncopyable{
 public:
-    virtual void product(std::shared_ptr<Event>& e) PURE;
+    virtual void product(std::shared_ptr<EventData>& e) PURE;
 };
 
 
 class Consumer :public Noncopyable, Nonmoveable {
 public:
-    virtual Result Consume(Batch batch) PURE;
+    virtual Result Consume(std::shared_ptr<Batch>& batch) PURE;
 
-    virtual std::unique_ptr<Channel>& channel() PURE;
+    virtual std::shared_ptr<Queue>& channel() PURE;
 
-    virtual bool bindChannel(std::unique_ptr<Channel> channel) PURE;
+    virtual bool bindChannel(std::shared_ptr<Queue> channel) PURE;
+
+    virtual Result Consume(Batch& batch) PURE;
 };
 
 }
