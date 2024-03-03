@@ -90,9 +90,9 @@ class Consumer :public Noncopyable, Nonmoveable {
 public:
     virtual Result Consume(Batch batch) PURE;
 
-    virtual Channel* channel() PURE;
+    virtual std::unique_ptr<Channel>& channel() PURE;
 
-    virtual bool bindChannel() PURE;
+    virtual bool bindChannel(std::unique_ptr<Channel> channel) PURE;
 };
 
 }
