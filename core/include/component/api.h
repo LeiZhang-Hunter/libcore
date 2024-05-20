@@ -78,13 +78,13 @@ public:
 class Batch :public Nonmoveable, Noncopyable {
 public:
     virtual std::map<std::string, std::string> meta() PURE;
-    virtual std::vector<EventData>& events() PURE;
+    virtual std::vector<std::shared_ptr<Core::Component::EventData>>& events() PURE;
     virtual void Release() PURE;
 };
 
 class Queue :public Nonmoveable, Noncopyable{
 public:
-    virtual void product(std::shared_ptr<EventData>& e) PURE;
+    virtual void product(const std::shared_ptr<EventData>& e) PURE;
 };
 
 
