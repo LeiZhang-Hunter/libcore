@@ -95,6 +95,21 @@ public:
     }
 
     /**
+     * @brief 初始化服务
+     *
+     * @return true
+     * @return false
+     */
+    bool start() {
+        for (auto iter = containerMap.begin(); iter != containerMap.end(); ) {
+            if (iter->second.second)
+                iter->second.second->start();
+            iter++;
+        }
+        return true;
+    }
+
+    /**
      * @brief 容器初始化完成
      *
      * @return true
