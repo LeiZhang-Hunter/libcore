@@ -1,4 +1,5 @@
 #include "os/unix_timestamp.h"
+#include <ctime>
 
 namespace Core {
 namespace OS {
