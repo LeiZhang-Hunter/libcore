@@ -6,7 +6,6 @@ extern "C" {
 #include <unistd.h>
 }
 #include <cstring>
-#include <iostream>
 #include "build_expect.h"
 #include "unix_logger.h"
 

@@ -36,11 +36,11 @@ public:
 
     void init() override;
 
-    void start() {};
+    void start() override {};
 
     void stop() override;
 
-    void finish() {};
+    void finish() override {};
 
     /**
      * @brief http请求的派遣,这里要注意性能，作为处理的主入口，压测结果单线程4w5

@@ -10,12 +10,13 @@
 namespace Core {
 namespace OS {
 
-UnixThread::UnixThread() :mTerminated(false),
-daemonize(false), 
+UnixThread::UnixThread() :
+loop((std::make_shared<Event::EventLoop>())),
+daemonize(false),
+mTerminated(false),
 isSuspend(false),
 mRunStatus(false),
-wakeupChannelFd(createChannelFd()),
-loop((std::make_shared<Event::EventLoop>())) {}
+wakeupChannelFd(createChannelFd()) {}
 
 int UnixThread::ThreadProc(std::unique_ptr<UnixThreadProc> proc, const std::shared_ptr<UnixThread>& object) {
     if (!object->getName().empty()) {

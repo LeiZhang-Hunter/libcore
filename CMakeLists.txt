@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(APP_NAME core)
+# used as a module of other projects
+if(NOT DEFINED PROJECT_NAME)
+    project(core LANGUAGES CXX)
+    add_compile_options(-Wall -Wextra -Werror)
+endif()
 
-project(${APP_NAME})
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-file(GLOB_RECURSE CORE_SRCS "core/*.cc")
-file(GLOB_RECURSE CORE_C_SRCS "src/*.c")
-
-find_package(ZLIB REQUIRED)
-
+# options
 set(libcore_FMT_PROVIDER
     "package"
     CACHE STRING "Provider of fmt library")
@@ -22,10 +17,19 @@ set(libcore_LIBEVENT_PROVIDER
     CACHE STRING "Provider of LIBEVENT library")
 set_property(CACHE libcore_LIBEVENT_PROVIDER PROPERTY STRINGS "module" "package")
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+find_package(ZLIB REQUIRED)
+
+# libcgroup support pkg-config, but not cmake
+find_package(PkgConfig)
+pkg_check_modules(LIBCGROUP REQUIRED libcgroup)
+
 if(libcore_FMT_PROVIDER STREQUAL "module")
     add_subdirectory(third_party/fmt)
 else()
-    find_package(fmt REQUIRED)
+    find_package(fmt CONFIG REQUIRED)
 endif()
 
 if(libcore_LIBEVENT_PROVIDER STREQUAL "module")
@@ -35,15 +39,9 @@ else()
     find_package(Libevent CONFIG REQUIRED)
 endif()
 
-include_directories("core/include")
-
-message(STATUS "core files ${CORE_SRCS}")
-
-add_library(core ${CORE_SRCS} ${CORE_C_SRCS})
-
-target_link_libraries(core fmt::fmt ${ZLIB_LIBRARIES} libcgroup.a)
-if(libcore_LIBEVENT_PROVIDER STREQUAL "module")
-    target_link_libraries(core event_core event_pthreads)
-else()
-    target_link_libraries(core libevent::core libevent::pthreads)
-endif()
+include_directories(core/include)
+add_subdirectory(core)
+add_library(core INTERFACE)
+target_include_directories(core INTERFACE "core/include")
+target_link_libraries(core INTERFACE libcore::common libcore::component libcore::event libcore::process libcore::http
+                                     libcore::os)

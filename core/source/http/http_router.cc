@@ -75,7 +75,7 @@ HttpRouter::addRoute(const std::vector<std::string> &method, const std::string &
 
 void HttpRouter::addStaticRoute(const std::vector<std::string> &methodVector, const std::string &uri,
                     const std::shared_ptr<HttpAction> &action) {
-    for (int i = 0; i < methodVector.size(); i++) {
+    for (size_t i = 0; i < methodVector.size(); i++) {
         std::string method = methodVector[i];
         if (staticRoutes.find(method) == staticRoutes.end()) {
             staticRoutes[method][uri] = action;

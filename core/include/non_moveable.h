@@ -7,8 +7,8 @@ class Nonmoveable {
 public:
 public:
 
-    Nonmoveable(Nonmoveable&) = delete;
-
+    Nonmoveable(Nonmoveable&&) = delete;
+    Nonmoveable& operator=(Nonmoveable&&) = delete;
 protected:
     Nonmoveable() = default;
     ~Nonmoveable() = default;

@@ -22,6 +22,8 @@ namespace Component {
 namespace Process {
 
 Process::Process(const std::string &command, const std::shared_ptr<Event::EventLoop> &loop)
+: Process(command, loop.get()){}
+Process::Process(const std::string &command, Event::EventLoop* loop)
 :timer(std::make_unique<TimerChannel>(loop, [this]() {
     onRestore();
     return;
@@ -47,14 +49,14 @@ bool Process::execute() {
         // fork失败
         return false;
     } else if (pid == 0) {
-        char* argv[args.size()];
-        for (int i = 0; i < args.size(); i++) {
+        std::vector<char*> argv(args.size() + 1);
+        for (size_t i = 0; i < args.size(); i++) {
             std::cout << args[i].c_str() << std::endl;
             argv[i] = (char*)args[i].c_str();
         }
         argv[args.size()] = nullptr;
         // 子进程
-        int ret = execvp(binary.c_str(), argv);
+        int ret = execvp(binary.c_str(), argv.data());
         if (ret == -1) {
             SYSTEM_ERROR_LOG_TRACE("execvp {} failed", binary);
             _exit(errno);
@@ -64,6 +66,7 @@ bool Process::execute() {
         // 父进程
         pid_ = pid;
         status = RUN;
+        start_time_ = time(nullptr);
         if (cgroup_) {
             cgroup_->run();
             cgroup_->attach(pid);

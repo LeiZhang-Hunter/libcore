@@ -54,12 +54,13 @@ public:
      * 秒 
      * @param millisecond
      */
-    TimerChannel(const std::shared_ptr<Event::EventLoop> &loop_, const std::function<void()>& cb)
-     :loop(loop_), cb_(cb) {
+    TimerChannel(const std::shared_ptr<Event::EventLoop> &loop, const std::function<void()>& cb)
+     : TimerChannel(loop.get(), cb) {}
+    TimerChannel(Event::EventLoop* loop, const std::function<void()>& cb)
+    : cb_(cb), loop_(loop) {
         evtimer_assign(
         &raw_event_, loop_->getEventBase(),
         [](evutil_socket_t, short, void* arg) -> void {
-            std::cout << "timer" << std::endl;
             auto timer = static_cast<TimerChannel*>(arg);
             if (!timer) {
                 return;
@@ -94,7 +95,7 @@ public:
 
 private:
     std::function<void()> cb_;
-    const std::shared_ptr<Event::EventLoop> &loop;
+    Event::EventLoop* loop_;
     std::shared_ptr<Event::EventBufferChannel> channel_;
     event raw_event_;
 };

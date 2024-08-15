@@ -16,11 +16,11 @@ namespace Event {
     }
 
 
-    void EventNoBufferChannel::onWrite(bufferevent *evClient, void *arg) {
+    void EventNoBufferChannel::onWrite(bufferevent */*evClient*/, void * /*arg*/) {
 
     }
 
-    void EventNoBufferChannel::onEvent(int fd, short events, void *arg) {
+    void EventNoBufferChannel::onEvent(int /*fd*/, short events, void *arg) {
         //管道不能是空的
         if (!arg)
             return;

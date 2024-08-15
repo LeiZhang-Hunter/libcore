@@ -40,13 +40,16 @@ enum STATUS {
 class Process :public Nonmoveable, public Noncopyable, public ProcessEvent {
 public:
     Process(const std::string& command, const std::shared_ptr<Event::EventLoop>& loop);
+    Process(const std::string& command, Event::EventLoop* loop);
 
-    ~Process() = default;
+    ~Process() override = default;
 
     bool execute();
 
     void onCreate() override {};
-    void onStart() override {};
+    void onStart() override {
+      start_time_ = time(nullptr);
+    };
     void onStop() override {};
     void onReload() override {};
     void onDestroy() override {};
@@ -129,6 +132,7 @@ public:
     pid_t getPid() {
         return pid_;
     }
+    auto getStartTime() const {return start_time_;}
 protected:
     std::unique_ptr<TimerChannel> timer;
 private:
@@ -144,7 +148,8 @@ private:
     uint8_t restoreCount = 0;
     Manager* m = nullptr;
     std::string command_;
-    const std::shared_ptr<Event::EventLoop>& loop_;
+    Event::EventLoop* loop_;
+    time_t start_time_;
 };
 }
 }

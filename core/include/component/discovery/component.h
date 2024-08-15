@@ -36,19 +36,19 @@ public:
 
     }
 
-    void init() {
+    void init() override {
 
     };
 
-    void start() {
+    void start() override {
 
     };
 
-    void stop() {
+    void stop() override {
         watcher = nullptr;
     };
 
-    void finish() {
+    void finish() override {
 
     };
 
@@ -62,7 +62,7 @@ public:
 
     std::shared_ptr<Event::EventChannel> channel(const std::shared_ptr<Event::EventLoop>& loop) {
         auto channel = std::make_shared<Event::EventBufferChannel>(loop, watcher->getFd());
-        channel->bindOnReadCallable([ptr = this](auto && bev, auto && channel){
+        channel->bindOnReadCallable([ptr = this](auto &&, auto &&){
             struct inotify_event event;
             read(ptr->watcher->getFd(), &event, sizeof(event));
             if (event.mask & IN_CREATE) {
