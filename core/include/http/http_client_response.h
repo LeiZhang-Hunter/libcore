@@ -12,7 +12,7 @@ public:
             const char *host_,
             const char *path_,
             std::string& method_)
-            :req(req_), arg(arg_), host(host_), path(path_), method(method_){
+            :host(host_), path(path_), method(method_), req(req_), arg(arg_){
         if (!req) {
             return;
         }

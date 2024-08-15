@@ -85,7 +85,7 @@ std::string&  getEthIp()
 }
 
 bool gzipCompress(const unsigned char* context, size_t length, std::string& compressBuffer) {
-    z_stream dest_stream = { nullptr };
+    z_stream dest_stream{};
     if (build_unlikely(deflateInit2(&dest_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 9, Z_DEFAULT_STRATEGY) != Z_OK)) {
         return false;
     }
@@ -115,7 +115,7 @@ std::string stripslashes(std::string_view str) {
         return result.assign(str);
     }
 
-    for(int i = 0; i < str.length(); i++) {
+    for(size_t i = 0; i < str.length(); i++) {
         if (str[i] == '\\' && (i + 1 < str.length())) {
             char byte = str[i + 1];
             switch (byte) {

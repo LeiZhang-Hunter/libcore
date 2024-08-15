@@ -24,6 +24,8 @@ void CallbackArgs::loadRequestMetric(size_t length) {
     //上报记录信息
 #if USE_DEBUG
     std::cout << "loadRequestMetric:" << length << std::endl;
+#else
+    (void)length;
 #endif
 }
 
@@ -113,7 +115,7 @@ HttpClient::HttpClient(const std::string& requestUrl_, void (*cb_)(HttpClientRes
  * 这个函数是在http客户端之后去执行的，当执行这个函数后httpclient存在已经析构的风险，所以不要在这里使用httpclient的指针
  * 这个函数并不会去触发http_error_cb
  */
-static void connection_close_cb(struct evhttp_connection *, void *params) {
+static void connection_close_cb(struct evhttp_connection *, void */*params*/) {
     LOG_CONTENT_ERR("connection_close_cb");
 }
 

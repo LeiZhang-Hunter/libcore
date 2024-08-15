@@ -1,7 +1,7 @@
 #pragma once
 
 extern "C" {
-#include <event.h>
+#include <event2/event.h>
 #include <unistd.h>
 }
 #include <iostream>
@@ -14,12 +14,11 @@ class EventLoop;
 class EventChannel : public std::enable_shared_from_this<EventChannel> {
 public:
 
-    EventChannel(const std::shared_ptr<EventLoop> &loop_, int fd_, bool auto_close = true) : fd(fd_),
+    EventChannel(const std::shared_ptr<EventLoop> &loop_, int fd_, bool auto_close = true) : auto_close_(auto_close),
                                                                                              loop(loop_),
-                                                                                             auto_close_(
-                                                                                                     auto_close) {}
+                                                                                             fd(fd_) {}
 
-    virtual bool eventSet(const std::shared_ptr<EventLoop> &loop) {
+    virtual bool eventSet(const std::shared_ptr<EventLoop> &) {
         return true;
     }
 
@@ -42,11 +41,11 @@ public:
         return events;
     }
 
-    virtual bool enable(double second) {
+    virtual bool enable(double) {
         return true;
     };
 
-    virtual bool enable(unsigned char events_, __time_t second) {
+    virtual bool enable(unsigned char, __time_t) {
         return true;
     }
 
@@ -58,11 +57,11 @@ public:
         return true;
     }
 
-    virtual bool enableWriting(double second) {
+    virtual bool enableWriting(double) {
         return true;
     }
 
-    virtual bool enableReading(double second) {
+    virtual bool enableReading(double) {
         return true;
     }
 
@@ -73,8 +72,8 @@ public:
      * @return true
      * @return false
      */
-    bool setEvents(uint32_t _events) {
-        return events = _events;
+    void setEvents(uint32_t _events) {
+        events = _events;
     }
 
     /**

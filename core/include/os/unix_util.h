@@ -181,7 +181,7 @@ static ssize_t readch(int fd, char *ptr) {
 * @param maxlen
 * @return
 */
-static ssize_t readline(int fd, void *vptr, size_t maxlen) {
+inline static ssize_t readline(int fd, void *vptr, size_t maxlen) {
     ssize_t i = 0;
     ssize_t ret = 0;
     char ch = '\0';
@@ -189,7 +189,7 @@ static ssize_t readline(int fd, void *vptr, size_t maxlen) {
 
     ptr = (char *) vptr;
 
-    for (i = 1; i < maxlen; ++i) {
+    for (i = 1; i < static_cast<ssize_t>(maxlen); ++i) {
         ret = readch(fd, &ch);
         if (1 == ret) {
             *ptr++ = ch;
@@ -229,7 +229,7 @@ static inline bool getSockAddress(int fd, const struct sockaddr_in &sa) {
 }
 
 //  读取主机id，用来区分不同物理机，先读取/etc/machineid，如果读不到则把cpuid和物理网卡地址做xxhash
-static uint64_t getMachineId() {
+inline static uint64_t getMachineId() {
     // 优先读取 /etc/machine-id 文件
     Common::XXHash64 hashUtil(0);
     std::ifstream machine_id_file("/etc/machine-id");

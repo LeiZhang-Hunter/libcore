@@ -157,7 +157,6 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
     unsigned long nice;
     unsigned long system;
     unsigned long idle;
-    char statName[64]={0};
     sscanf(statContext.c_str(), "%s %ld %ld %ld %ld",name,&user, &nice, &system,&idle);
 
     unsigned long procCpuTime = data.utime + data.stime + data.cutime + data.cstime;

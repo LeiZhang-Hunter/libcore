@@ -11,9 +11,10 @@ class HttpResponse :public Core::Noncopyable {
 public:
 //    HttpResponse(struct evhttp_request *request_, const char* uri)
     HttpResponse(struct evhttp_request *request_)
-    :httpBuffer(evbuffer_new()),
+    :
 //    httpUri(uri),
     request(request_),
+    httpBuffer(evbuffer_new()),
     output_headers(evhttp_request_get_output_headers(request)) {};
 
     bool response(short code, const std::string& response);

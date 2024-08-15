@@ -19,8 +19,8 @@ namespace Http {
 HttpManager::HttpManager(const std::shared_ptr<Event::EventLoop>& loop_,
  const std::shared_ptr<Core::Component::UnixThreadContainer>& manager,
  const std::shared_ptr<HttpConfig>& config)
-    :loop(loop_),
-    routerHandle(std::make_shared<HttpRouter>()),
+    : routerHandle(std::make_shared<HttpRouter>()),
+    loop(loop_),
     manager_(manager),
     httpConfig(config)
 {
@@ -47,7 +47,7 @@ void HttpManager::init() {
         current->init(loop);
         return;
     }
-    for (int i = 0; i < manager_->getContainer().size(); i++) {
+    for (size_t i = 0; i < manager_->getContainer().size(); i++) {
         std::shared_ptr<HttpWorker> worker = std::make_shared<HttpWorker>(httpIp, httpPort);
         worker->setTimeout(httpTimeout);
         worker->setCallable(httpRequestHandle, this);

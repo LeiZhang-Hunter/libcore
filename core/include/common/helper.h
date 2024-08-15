@@ -66,7 +66,7 @@ static inline uint8_t getHexByAscii(uint8_t ascii) {
  * @param traceId
  * @return
  */
-static bool encodeTraceId(const std::string_view& traceId, std::string& encodeTraceId) {
+inline static bool encodeTraceId(const std::string_view& traceId, std::string& encodeTraceId) {
     if (traceId.length() < 32) {
         return false;
     }
@@ -86,7 +86,7 @@ static bool encodeTraceId(const std::string_view& traceId, std::string& encodeTr
  * @param traceId
  * @return
  */
-static bool encodeSpanId(const std::string_view& spanId, std::string& encodeSpanId) {
+inline static bool encodeSpanId(const std::string_view& spanId, std::string& encodeSpanId) {
     if (spanId.length() < 16) {
         return false;
     }

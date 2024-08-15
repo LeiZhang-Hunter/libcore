@@ -1,6 +1,7 @@
 #pragma once
 extern "C" {
-#include "event.h"
+#include <event2/event.h>
+#include <event2/bufferevent.h>
 }
 #include <memory>
 #include "event_queue.h"

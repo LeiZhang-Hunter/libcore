@@ -97,7 +97,7 @@ bool UnixLogger::log(int level, const std::string &message) {
      *
      */
     writeFd = open(logPath.c_str(), O_CREAT | O_RDWR | O_APPEND, 0664);
-    ssize_t res = writen(writeFd, (void *) data.c_str(), data.size());
+    writen(writeFd, (void *) data.c_str(), data.size());
     close(writeFd);
 
     // std::ofstream file;
@@ -119,7 +119,7 @@ bool UnixLogger::input(const std::string &buffer) {
     UnixTimestamp time;
     std::string logPath = filePath + "-" + time.toHourDateForLog() + ".log";
     int writeFd = open(logPath.c_str(), O_CREAT | O_RDWR | O_APPEND | O_NONBLOCK, 0664);
-    ssize_t res = writen(writeFd, (void *) buffer.data(), buffer.size());
+    writen(writeFd, (void *) buffer.data(), buffer.size());
     close(writeFd);
     return true;
 }

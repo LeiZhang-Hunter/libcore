@@ -19,14 +19,14 @@ namespace Process {
 class Manager : public Component, public Noncopyable, public Nonmoveable {
 public:
     Manager()
-    :loop(std::make_unique<Event::EventLoop>()), sigset(std::make_unique<OS::UnixSigSet>()) {
+    :loop(std::make_shared<Event::EventLoop>()), sigset(std::make_unique<OS::UnixSigSet>()) {
     }
 
     void init() override {
 
     }
 
-    virtual void start() override {
+    void start() override {
         sigset->remove(SIGCHLD);
         sigset->block();
         loop->sigAdd(SIGCHLD, onExit, this);
@@ -68,6 +68,16 @@ public:
     std::unordered_map<pid_t, std::unique_ptr<Process>>& all() {
         return maps;
     }
+
+    void stopProcess(const std::string& name) {
+      for (auto &[pid, process]: maps) {
+        if (process->name() == name) {
+          process->stop();
+        }
+      }
+    }
+
+    Event::EventLoop* getLoop() const {return loop.get();}
 
 protected:
     friend class Process;

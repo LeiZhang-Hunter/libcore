@@ -87,7 +87,7 @@ void EventBufferChannel::close(bufferevent *evClient, EventChannel *arg) {
     loop->deleteChannel(shared_from_this());
 }
 
-bool EventBufferChannel::eventSet(const std::shared_ptr<EventLoop> &loop) {
+bool EventBufferChannel::eventSet(const std::shared_ptr<EventLoop> &/*loop*/) {
     //添加新事件
     int ret = 0;
     if (this->getTimer().tv_usec > 0) {

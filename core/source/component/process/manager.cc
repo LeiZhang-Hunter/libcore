@@ -16,7 +16,7 @@
 namespace Core {
 namespace Component {
 namespace Process {
-void Manager::onExit(int sig, short events, void *param) {
+void Manager::onExit(int /* sig */, short /* events */, void *param) {
     pid_t pid;
     int stat;
     pid = waitpid(-1, &stat, WNOHANG);

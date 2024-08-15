@@ -27,7 +27,7 @@ private:
     EventTimer *timer;
 };
 
-static void onTimerCallable(evutil_socket_t fd, short what, void *arg) {
+static void onTimerCallable(evutil_socket_t /*fd*/, short /*what*/, void *arg) {
     auto helper = (EventTimerHelper *) arg;
     helper->doCallable();
 }
