@@ -21,6 +21,9 @@ public:
     Manager()
     :loop(std::make_shared<Event::EventLoop>()), sigset(std::make_unique<OS::UnixSigSet>()) {
     }
+    Manager(std::shared_ptr<Event::EventLoop> loop)
+    :loop(loop), sigset(std::make_unique<OS::UnixSigSet>()) {
+    }
 
     void init() override {
 

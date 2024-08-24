@@ -15,7 +15,8 @@
 
 #include "component/process/manager.h"
 #include "os/unix_logger.h"
-
+#include <sys/prctl.h>
+#include <signal.h>
 
 namespace Core {
 namespace Component {
@@ -55,6 +56,12 @@ bool Process::execute() {
             argv[i] = (char*)args[i].c_str();
         }
         argv[args.size()] = nullptr;
+#if defined(__linux__)
+        prctl(PR_SET_PDEATHSIG, SIGTERM);
+#elif defined(__FreeBSD__)
+        int sigid = SIGTERM;
+        procctl(P_PID, 0, PROC_PDEATHSIG_CTL, &sigid);
+#endif
         // 子进程
         int ret = execvp(binary.c_str(), argv.data());
         if (ret == -1) {

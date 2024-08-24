@@ -14,77 +14,69 @@
 #pragma once
 #include <utility>
 
-#include "watcher.h"
-#include "os/unix_logger.h"
 #include "component/api.h"
-#include "event/event_channel.h"
 #include "event/event_buffer_channel.h"
+#include "event/event_channel.h"
+#include "os/unix_logger.h"
+#include "watcher.h"
 
-namespace Core {
-namespace Component {
-namespace Discovery {
-class Component :public Core::Component::Component {
+namespace Core::Component::Discovery {
+class Component : public Core::Component::Component {
 public:
-    explicit Component(const std::string& configPath) :watcher(std::make_unique<Watcher>()) {
-        if (!watcher->reg(configPath, IN_CREATE | IN_MODIFY | IN_DELETE)) {
-            SYSTEM_ERROR_LOG_TRACE("watcher->reg failed({}):{}", errno, strerror(errno));
-            return;
-        }
+  explicit Component(const std::string &config_path) : watcher_(std::make_unique<Watcher>()) {
+    if (!watcher_->Reg(config_path, IN_CREATE | IN_MODIFY | IN_DELETE)) {
+      SPDLOG_ERROR("watcher->reg failed({}):{}", errno, strerror(errno));
+      return;
     }
+    SPDLOG_INFO("watch file: {}", config_path);
+  }
 
-    ~Component() {
+  void init() override {};
 
-    }
+  void start() override {};
 
-    void init() override {
+  void stop() override { watcher_ = nullptr; };
 
-    };
+  void finish() override {};
 
-    void start() override {
+  std::string name() override { return "discovery"; }
 
-    };
+  void setListener(std::shared_ptr<ConfigListener> listener) { listener_ = std::move(listener); }
 
-    void stop() override {
-        watcher = nullptr;
-    };
-
-    void finish() override {
-
-    };
-
-    std::string name() override {
-        return "discovery";
-    }
-
-    void setListener(std::shared_ptr<ConfigListener> listener_) {
-        listener = std::move(listener_);
-    }
-
-    std::shared_ptr<Event::EventChannel> channel(const std::shared_ptr<Event::EventLoop>& loop) {
-        auto channel = std::make_shared<Event::EventBufferChannel>(loop, watcher->getFd());
-        channel->bindOnReadCallable([ptr = this](auto &&, auto &&){
-            struct inotify_event event;
-            read(ptr->watcher->getFd(), &event, sizeof(event));
-            if (event.mask & IN_CREATE) {
-                if (ptr->listener)
-                    ptr->listener->onCreate();
+  std::shared_ptr<Event::EventChannel> channel(const std::shared_ptr<Event::EventLoop> &loop) {
+    auto channel = std::make_shared<Event::EventBufferChannel>(loop, watcher_->GetFd());
+    channel->bindOnReadCallable(
+        [&](struct bufferevent *bev, Core::Event::EventChannel *) {
+          struct evbuffer *input = bufferevent_get_input(bev);
+          size_t length = evbuffer_get_length(input);
+          size_t i = 0;
+          while (i < length) {
+            auto p = evbuffer_pullup(input, sizeof(struct inotify_event));
+            if (p == nullptr) {
+              SPDLOG_ERROR("rest of data not enough, rest={}", length - i);
+              return;
             }
-            if (event.mask & IN_MODIFY) {
-                if (ptr->listener)
-                    ptr->listener->onUpdate();
+            auto *event = (struct inotify_event *)p;
+            if (event->mask & IN_CREATE) {
+              if (listener_) listener_->onCreate();
             }
-            if (event.mask & IN_DELETE) {
-                if (ptr->listener)
-                    ptr->listener->onDelete();
+            if (event->mask & IN_MODIFY) {
+              if (listener_) listener_->onUpdate();
             }
-        }, -1);
-        return channel;
-    }
+            if (event->mask & IN_DELETE) {
+              if (listener_) listener_->onDelete();
+            }
+            auto used = sizeof(struct inotify_event) + event->len;
+            evbuffer_drain(input, used);
+            i += used;
+          }
+        },
+        -1);
+    return channel;
+  }
 
 private:
-    std::unique_ptr<Watcher> watcher;
-    std::shared_ptr<ConfigListener> listener;
+  std::unique_ptr<Watcher> watcher_;
+  std::shared_ptr<ConfigListener> listener_;
 };
-}
-}
-}
+} // namespace Core::Component::Discovery
