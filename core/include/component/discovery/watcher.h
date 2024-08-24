@@ -17,35 +17,42 @@ extern "C" {
 #include <sys/inotify.h>
 #include <unistd.h>
 }
+#include <spdlog/spdlog.h>
 #include <string>
 
-namespace Core {
-namespace Component {
-namespace Discovery {
+namespace Core::Component::Discovery {
 class Watcher {
 public:
-    Watcher() :fd(inotify_init()){};
-
-    bool reg(const std::string path, uint32_t __mask) {
-        int watchDescriptor = inotify_add_watch(fd, path.c_str(), __mask);
-        if (watchDescriptor == -1) {
-            return false;
-        }
-        return true;
+  Watcher() : fd_(inotify_init()) {
+    int flags = fcntl(fd_, F_GETFL, 0);
+    int ret = fcntl(fd_, F_SETFL, flags | O_NONBLOCK | O_CLOEXEC);
+    if (ret == -1) {
+      SPDLOG_ERROR("Failed to set inotify fd to non-blocking: {}", strerror(errno));
     }
+  };
 
-    int getFd() {
-        return fd;
+  bool Reg(const std::string &path, uint32_t mask) {
+    wd_ = inotify_add_watch(fd_, path.c_str(), mask);
+    if (wd_ == -1) {
+      SPDLOG_ERROR("inotify_add_watch failed: errno={}, err message={}", errno, strerror(errno));
+      return false;
     }
+    return true;
+  }
 
-    ~Watcher() {
-        if (fd != -1) {
-            close(fd);
-        }
-    };
+  int GetFd() const { return fd_; }
+
+  ~Watcher() {
+    if (wd_ != -1) {
+      inotify_rm_watch(fd_, wd_);
+    }
+    if (fd_ != -1) {
+      close(fd_);
+    }
+  };
+
 private:
-    int fd = -1;
+  int fd_ = -1;
+  int wd_ = -1;
 };
-}
-}
-}
+} // namespace Core::Component::Discovery
