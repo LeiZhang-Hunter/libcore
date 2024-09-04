@@ -1,14 +1,11 @@
 #include "os/unix_pid_file.h"
+#include <fcntl.h>          // for flock, fcntl, open, F_SETLK, F_WRLCK
+#include <spdlog/spdlog.h>  // for SPDLOG_ERROR, SPDLOG_WARN
+#include <stdio.h>          // for SEEK_SET
+#include <stdlib.h>         // for exit, atoi
+#include <unistd.h>         // for close, ftruncate, getpid, lseek, read, write
+#include <sstream>          // for basic_stringstream, basic_ostream::operat...
 
-extern "C" {
-#include <fcntl.h>
-#include <unistd.h>
-}
-
-#include <iostream>
-#include <sstream>
-
-#include "os/unix_logger.h" 
 
 namespace Core {
 namespace OS {
@@ -16,14 +13,14 @@ UnixPidFile::UnixPidFile(const std::string &pidFile, int flag) {
     //检查pid文件
     pidFd = ::open(pidFile.c_str(), flag, 0777);
     if (pidFd == -1) {
-        SYSTEM_ERROR_LOG_TRACE("pid file({}) error:{}", pidFile, strerror(errno));
+        SPDLOG_ERROR("pid file({}) error:{}", pidFile, strerror(errno));
         exit(-1);
     }
 }
 
 bool UnixPidFile::tryWriteLock() {
     if (pidFd == -1) {
-        LOG_CONTENT_ERR("pidFile error!");
+        SPDLOG_WARN("pidFile error!");
         exit(-1);
         return false;
     }
@@ -37,14 +34,14 @@ bool UnixPidFile::tryWriteLock() {
 
 pid_t UnixPidFile::getPid() {
     if (pidFd <= 0) {
-        SYSTEM_ERROR_LOG_TRACE("pidFile error!");
+        SPDLOG_ERROR("pidFile error!");
         exit(-1);
     }
     //持久化pid进程文件锁
     char buf[64];
     ssize_t res = ::read(pidFd, buf, sizeof(buf));
     if (res == -1) {
-        SYSTEM_ERROR_LOG_TRACE(strerror(errno));
+        SPDLOG_ERROR(strerror(errno));
         exit(-1);
     }
     buf[res] = '\0';
@@ -59,14 +56,14 @@ pid_t UnixPidFile::setPid() {
     lseek(pidFd, 0, SEEK_SET);
     int ret = ftruncate(pidFd, 0);
     if (ret == -1) {
-        SYSTEM_ERROR_LOG_TRACE(strerror(errno));
+        SPDLOG_ERROR(strerror(errno));
     }
 
     //重新写入pid
     int res = write(pidFd, pidStr.str().c_str(), (pidStr.str().length()));
 
     if (res <= 0) {
-        SYSTEM_ERROR_LOG_TRACE(strerror(errno));
+        SPDLOG_ERROR(strerror(errno));
         exit(-1);
     }
 

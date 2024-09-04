@@ -1,10 +1,15 @@
 #pragma once
 
-#include "event/event_loop.h"
-#include "non_copyable.h"
+#include <event2/http.h>            // for evhttp_del_accept_socket
+#include <cstdint>                 // for uint16_t
+#include <unistd.h>                 // for close
+#include <string>                   // for string, basic_string
+#include "event/event_smart_ptr.h"  // for EventHttpPtr
+#include "non_copyable.h"           // for Noncopyable
+namespace Core { namespace Event { class EventLoop; } }
 
-namespace Core {
-namespace Http {
+
+namespace Core::Http {
 
 /**
  * 线程管理器
@@ -14,9 +19,9 @@ class HttpWorker : public Core::Noncopyable {
 public:
     HttpWorker(const std::string& ip_, uint16_t port_) :ip(ip_), port(port_) {};
 
-    void init(const std::shared_ptr<Event::EventLoop>& loop);
+    void init(Event::EventLoop* loop);
 
-    int openServer();
+    int openServer() const;
 
     void stop() {
         if (listener != -1) {
@@ -68,5 +73,4 @@ private:
 
     struct evhttp_bound_socket* bound = nullptr;
 };
-}
 }

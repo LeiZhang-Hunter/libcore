@@ -1,5 +1,6 @@
 #include "os/unix_timestamp.h"
 #include <ctime>
+#include <cstdio>
 
 namespace Core {
 namespace OS {

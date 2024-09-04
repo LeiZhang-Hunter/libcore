@@ -1,11 +1,17 @@
 #include "os/unix_thread.h"
-
-#include "build_expect.h"
-#include "os/unix_logger.h"
-#include "os/unix_thread_proc.h"
-#include "event/event_loop.h"
-#include "event/event_buffer_channel.h"
-#include "os/unix_current_thread.h"
+#include <event2/event.h>                // for EV_PERSIST
+#include <spdlog/spdlog.h>               // for SPDLOG_ERROR
+#include <stdint.h>                      // for uint64_t
+#include <stdlib.h>                      // for exit
+#include <sys/syscall.h>                 // for SYS_gettid
+#include <unistd.h>                      // for syscall, write
+#include <iostream>                      // for char_traits, basic_ostream
+#include <utility>                       // for forward, move
+#include "build_expect.h"                // for build_unlikely
+#include "event/event_buffer_channel.h"  // for EventBufferChannel
+#include "event/event_loop.h"            // for EventLoop
+#include "os/unix_thread_proc.h"         // for UnixThreadProc
+#include "os/unix_util.h"                // for set_thread_name
 
 namespace Core {
 namespace OS {
@@ -42,8 +48,7 @@ ssize_t UnixThread::wakeUp() {
     if (n != sizeof(notify)) {
         std::string error("thread ");
         error += std::to_string(getTid()) + " wake up " + std::to_string(wakeupChannelFd) + " failed !";
-        SYSTEM_ALERT_LOG_TRACE(error)
-        std::cerr << error << std::endl;
+        SPDLOG_ERROR(error);
     }
     return n;
 }
@@ -53,7 +58,7 @@ bool UnixThread::start() {
     queue = std::make_shared<Event::EventQueueHandler>(shared_from_this());
 
     if (build_unlikely(wakeupChannelFd == -1)) {
-        SYSTEM_ALERT_LOG_TRACE("wakeupChannelFd create failed!");
+        SPDLOG_ERROR("wakeupChannelFd create failed!");
         exit(-1);
     }
 

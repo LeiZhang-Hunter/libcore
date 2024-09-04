@@ -50,13 +50,13 @@ typedef enum {
 
 class Result {
 public:
-    Status status() {
+    Status status() const {
         return status_;
     }
     void changeStatusTo(Status status) {
         status_ = status;
     }
-    std::string error() {
+    std::string error() const {
         return message_;
     }
 
@@ -77,10 +77,10 @@ public:
 template<class T>
 class AnyData :public Data {
 public:
-    AnyData(std::unique_ptr<T> data) {
+    explicit AnyData(std::unique_ptr<T> data) {
         data_ = std::move(data);
     }
-    virtual void* data() override {
+    void* data() override {
         return data_.get();
     };
 private:

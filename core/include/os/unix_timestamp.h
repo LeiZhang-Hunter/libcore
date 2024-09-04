@@ -1,9 +1,6 @@
 #pragma once
 
-extern "C" {
-#include <sys/times.h>
 #include <sys/time.h>
-}
 #include <cstdint>
 #include <string>
 

@@ -1,6 +1,11 @@
 #include "event/event_buffer_channel.h"
-
+#include <errno.h>
+#include <spdlog/spdlog.h>
+#include <string.h>
+#include <iostream>
 #include "build_expect.h"
+
+namespace Core { namespace Event { class EventChannel; } }
 
 namespace Core {
 namespace Event {
@@ -38,7 +43,7 @@ void EventBufferChannel::onEvent(bufferevent *ev, short flag, void *arg) {
 #ifdef USE_DEBUG
         std::cout << "arg null" << std::endl;
 #endif
-        SYSTEM_ERROR_LOG_TRACE("arg null");
+        SPDLOG_ERROR("arg null");
         return;
     }
 

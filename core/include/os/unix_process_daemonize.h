@@ -6,7 +6,7 @@ extern "C" {
 #include <signal.h>
 }
 
-#include "unix_logger.h"
+#include <spdlog/spdlog.h>
 
 namespace Core {
 namespace OS {
@@ -23,7 +23,7 @@ public:
         pid_t pid = fork();
 
         if (pid < 0) {
-            SYSTEM_ERROR_LOG_TRACE("create daemon process error");
+            SPDLOG_ERROR("create daemon process error");
             return false;
         } else if (pid > 0) {
             //杀死掉父进程
@@ -32,7 +32,7 @@ public:
 
         //如果说设置进程组组长失败，
         if (setsid() < 0) {
-            SYSTEM_ERROR_LOG_TRACE("create daemon process error");
+            SPDLOG_ERROR("create daemon process error");
             return false;
         }
 
@@ -49,7 +49,7 @@ public:
 
         int ret = chdir("/");
         if (ret < 0) {
-            SYSTEM_ERROR_LOG_TRACE("chdir error");
+            SPDLOG_ERROR("chdir error");
             return false;
         }
 

@@ -1,7 +1,5 @@
 #include "os/unix_countdown_latch.h"
 
-#include <iostream>
-
 namespace Core {
 namespace OS {
 /**

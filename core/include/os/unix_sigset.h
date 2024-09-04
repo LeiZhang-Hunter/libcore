@@ -13,47 +13,39 @@
 
 #pragma once
 extern "C" {
-#include <signal.h>
 #include <errno.h>
+#include <signal.h>
 }
 
 #include <iostream>
-
-#include "os/unix_logger.h"
+#include <spdlog/spdlog.h>
 
 namespace Core {
 namespace OS {
 class UnixSigSet {
 public:
-    UnixSigSet() {
-        sigfillset(&set);
-    }
+  UnixSigSet() { sigfillset(&set); }
 
-    void remove(int sig) {
-        int ret = sigdelset(&set, sig);
-        if (ret == -1) {
-            SYSTEM_ERROR_LOG_TRACE("sigdelset has error")
-        }
+  void remove(int sig) {
+    int ret = sigdelset(&set, sig);
+    if (ret == -1) {
+      SPDLOG_ERROR("sigdelset has error");
     }
+  }
 
-    void block() {
-        int ret = sigprocmask(SIG_BLOCK, &set, nullptr);
-        if (ret == -1) {
-            SYSTEM_ERROR_LOG_TRACE("sigprocmask has error")
-        }
-        return;
+  void block() {
+    int ret = sigprocmask(SIG_BLOCK, &set, nullptr);
+    if (ret == -1) {
+      SPDLOG_ERROR("sigprocmask has error");
     }
+    return;
+  }
 
-    void unblock() {
-        sigprocmask(SIG_UNBLOCK, &set, &oldSet);
-    }
-
-    ~UnixSigSet() {
-    }
+  void unblock() { sigprocmask(SIG_UNBLOCK, &set, &oldSet); }
 
 private:
-    sigset_t set = {};
-    sigset_t oldSet = {};
+  sigset_t set = {};
+  sigset_t oldSet = {};
 };
-}
-}
+} // namespace OS
+} // namespace Core

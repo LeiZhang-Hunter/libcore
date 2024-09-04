@@ -1,67 +1,52 @@
 #include "event/event_timer.h"
-
-extern "C" {
-#include "event2/event.h"
-}
 #include "event/event_loop.h"
-#include "os/unix_logger.h"
+#include "event2/event.h"
+#include <event2/event_compat.h>
+#include <functional>
+#include <spdlog/spdlog.h>
+#include <sys/time.h>
+#include <utility>
 
-namespace Core {
-namespace Event {
+namespace Core::Event {
+RepeatedTimer::RepeatedTimer(const std::shared_ptr<EventLoop> &loop, time_t millisecond, std::function<void()> callable)
+    : RepeatedTimer(loop.get(), millisecond, std::move(callable)) {}
 
-class EventTimerHelper {
-public:
-    explicit EventTimerHelper(EventTimer *timer_) {
-        timer = timer_;
-    }
+RepeatedTimer::RepeatedTimer(EventLoop *loop, time_t millisecond, std::function<void()> callable)
+    : loop_(loop), callable_(std::move(callable)) {
 
-    void doCallable() {
-        timer->callable();
-    }
+  if (loop_ == nullptr) {
+    return;
+  }
+  auto *event = evtimer_new(loop_->getEventBase(), TimerCallable, this);
+  if (event == nullptr) {
+    SPDLOG_ERROR("RepeatedTimer evtimer_new failed");
+    return;
+  }
+  event_set(event, 0, EV_PERSIST, TimerCallable, this);
 
-    ~EventTimerHelper() {
+  ptr_.Reset(event);
 
-    }
-
-private:
-    EventTimer *timer;
-};
-
-static void onTimerCallable(evutil_socket_t /*fd*/, short /*what*/, void *arg) {
-    auto helper = (EventTimerHelper *) arg;
-    helper->doCallable();
+  struct timeval time_val{};
+  constexpr time_t kMillisecond = 1000;
+  time_val.tv_sec = (millisecond / kMillisecond);
+  time_val.tv_usec = (millisecond % kMillisecond);
+  int ret = evtimer_add(ptr_.get(), &time_val);
+  if (ret != 0) {
+    SPDLOG_WARN("RepeatedTimer evtimer_add failed, ret: {}", ret);
+  }
 }
 
-bool EventTimer::enable(const std::function<void()> &callable_, time_t millisecond) {
-    callable = callable_;
-    if (ptr) {
-        evtimer_del(ptr.get());
-    }
-    ptr = evtimer_new(loop_->getEventBase(), onTimerCallable, helper);
-
-    struct timeval ms = {.tv_sec= (millisecond / 1000), .tv_usec = (millisecond % 1000)};
-    int ret = evtimer_add(ptr.get(), &ms);
-    if (build_likely(ret == 0)) {
-        return true;
-    }
-    LOG_CONTENT_ERR("evtimer_add error")
-    return false;
+void RepeatedTimer::Disable() {
+  if (ptr_) {
+    evtimer_del(ptr_.get());
+  }
 }
 
-void EventTimer::disable() {
-    if (ptr)
-        evtimer_del(ptr.get());
+void RepeatedTimer::TimerCallable(evutil_socket_t /*fd*/, short /*what*/, void *arg) {
+  auto *helper = static_cast<RepeatedTimer *>(arg);
+  if (helper->callable_) {
+    helper->callable_();
+  }
 }
 
-EventTimer::EventTimer(const std::shared_ptr<EventLoop> &loop) {
-    helper = new EventTimerHelper(this);
-    loop_ = loop.get();
-}
-
-EventTimer::~EventTimer() {
-    if (helper) {
-        delete helper;
-    }
-}
-}
-}
+} // namespace Core::Event

@@ -1,9 +1,15 @@
 #include "http/http_request.h"
+#include <event2/buffer.h>          // for evbuffer_get_length, evbuffer_pullup
+#include <event2/http.h>            // for evhttp_find_header, evhttp_parse_...
+#include <event2/http_struct.h>     // for evhttp_request
+#include <event2/keyvalq_struct.h>  // for evkeyval, evkeyvalq
+#include <cstring>                 // for size_t, memcpy
+#include <utility>                  // for pair
+#include "common/helper.h"          // for cStrTolower
+#include "event/event_smart_ptr.h"  // for EventHttpUriPtr
 
-#include "common/helper.h"
 
-namespace Core {
-namespace Http {
+namespace Core::Http {
 
 void HttpRequest::init() {
     if (!request) {
@@ -18,7 +24,7 @@ void HttpRequest::init() {
     uri_ = eventUri;
 
     //解码uri
-    Event::EventHttpUriPtr decoded = evhttp_uri_parse(eventUri);
+    Event::EventHttpUriPtr decoded( evhttp_uri_parse(eventUri));
     if (!decoded)
     {
         evhttp_send_error(request, HTTP_BADREQUEST, "Bad Request");
@@ -121,4 +127,4 @@ std::string_view& HttpRequest::getHeader(std::string_view key) {
     return iter->second;
 }
 }
-}
+

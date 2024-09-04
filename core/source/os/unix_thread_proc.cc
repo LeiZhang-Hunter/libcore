@@ -1,26 +1,23 @@
 #include "os/unix_thread_proc.h"
+#include <spdlog/spdlog.h>           // for SPDLOG_INFO
+#include <functional>                // for function
+#include <list>                      // for _List_iterator, list
+#include "event/event_loop.h"        // for EventLoop
+#include "os/unix_current_thread.h"  // for tid, currentLoop, currentThread
+#include "os/unix_thread.h"          // for UnixThread
 
-#include <iostream>
-#include <functional>
-#include "event/event_loop.h"
-#include "os/unix_current_thread.h"
-
-namespace Core {
-namespace OS {
-
+namespace Core::OS {
 /**
- * @brief 
+ * @brief
  * 线程运行的具体处理入口
  */
 void UnixThreadProc::runThread() {
-    UnixCurrentThread::currentLoop = loop;
-    UnixCurrentThread::currentThread = (thread);
-    std::cout << UnixCurrentThread::tid() << " start" << std::endl;
-    for (auto itr = thread->initList.begin(); itr != thread->initList.end(); itr++) {
-        auto& data = *itr;
-        data();
-    }
-    loop->loop();
+  UnixCurrentThread::currentLoop = loop;
+  UnixCurrentThread::currentThread = thread;
+  SPDLOG_INFO("thread {} start", UnixCurrentThread::tid());
+  for (auto &data : thread->initList) {
+    data();
+  }
+  loop->loop();
 }
-}
-}
+} // namespace Core::OS

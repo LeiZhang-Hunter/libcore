@@ -32,9 +32,7 @@ public:
      */
     void dispatchTask();
 
-    ~EventQueue() {
-
-    }
+    ~EventQueue() = default;
 
 private:
     /**

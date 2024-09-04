@@ -1,7 +1,7 @@
 #include "component/thread_container.h"
-
-#include "os/unix_logger.h"
-#include "os/unix_countdown_latch.h"
+#include <spdlog/spdlog.h>            // for SPDLOG_ERROR
+#include <utility>                    // for pair
+#include "os/unix_countdown_latch.h"  // for UnixCountDownLatch
 
 namespace Core {
 namespace Component {
@@ -14,7 +14,7 @@ void UnixThreadContainer::start() {
         });
         bool ret = iter->second->start();
         if (!ret) {
-            SYSTEM_ERROR_LOG_TRACE("create thread failed!");
+            SPDLOG_ERROR("create thread failed!");
         }
     }
     latch->wait();
@@ -29,7 +29,7 @@ void UnixThreadContainer::stop() {
 bool UnixThreadContainer::reg(pid_t index, const std::shared_ptr<OS::UnixThread>& thread) {
     auto iter = container.find(index);
     if (iter != container.end()) {
-        SYSTEM_ERROR_LOG_TRACE("Thread has been registered!");
+        SPDLOG_ERROR("Thread has been registered!");
         return false;
     }
 
@@ -40,7 +40,7 @@ bool UnixThreadContainer::reg(pid_t index, const std::shared_ptr<OS::UnixThread>
 bool UnixThreadContainer::task(pid_t index, const Event::Task& task) {
     auto iter = container.find(index);
     if (iter == container.end()) {
-        SYSTEM_ERROR_LOG_TRACE("No thread index found!");
+        SPDLOG_ERROR("No thread index found!");
         return false;
     }
 

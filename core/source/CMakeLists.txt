@@ -1,6 +1,5 @@
 add_subdirectory(common)
 add_subdirectory(component)
-add_subdirectory(coro)
 add_subdirectory(event)
 add_subdirectory(http)
 add_subdirectory(os)

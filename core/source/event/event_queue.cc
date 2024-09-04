@@ -1,9 +1,9 @@
 #include "event/event_queue.h"
-
+#include <spdlog/spdlog.h>
+#include <iostream>
 #include "build_expect.h"
-#include "os/unix_logger.h"
-#include "os/unix_thread.h"
 #include "os/unix_current_thread.h"
+#include "os/unix_thread.h"
 
 namespace Core {
 namespace Event {
@@ -18,7 +18,7 @@ namespace Event {
             {
                 std::lock_guard<std::mutex> guard(lock);
                 if (taskQueue.size() > 500) {
-                    SYSTEM_ERROR_LOG_TRACE("taskQueue is full");
+                    SPDLOG_ERROR("taskQueue is full");
                     std::cerr << "taskQueue is full, queue size:" << taskQueue.size() << std::endl;
                     return false;
                 }

@@ -13,13 +13,9 @@
 
 #pragma once
 
-#include <string>
-
-extern "C" {
-#include <libcgroup.h>
-}
-
-#include "os/unix_logger.h"
+#include <libcgroup.h>  // for cgroup_delete_cgroup, cgroup_free
+#include <sys/types.h>  // for pid_t
+#include <string>       // for basic_string, string
 
 namespace Core {
 namespace OS {
@@ -57,7 +53,6 @@ private:
     struct cgroup_controller *memoryController = nullptr;
     int limit = 0;
     float rate = 0;
-    bool isRun = false;
 };
 }
 }

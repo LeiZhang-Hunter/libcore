@@ -1,39 +1,27 @@
-//
-// Created by zhanglei on 2/14/22.
-//
+#pragma once
 
-#ifndef CORE_EVENT_EVENT_TIMER_H
-#define CORE_EVENT_EVENT_TIMER_H
-
-#include <memory>
-#include <functional>
 #include "event_smart_ptr.h"
+#include "non_copyable.h"
+#include <ctime>
+#include <event2/util.h>
+#include <functional>
+#include <memory>
 
-namespace Core {
-namespace Event {
-
+namespace Core::Event {
 class EventLoop;
 
-class EventTimerHelper;
-
-class EventTimer {
+class RepeatedTimer : public Core::Noncopyable {
 public:
-    explicit EventTimer(const std::shared_ptr<EventLoop> &loop);
+  explicit RepeatedTimer(const std::shared_ptr<EventLoop> &loop, time_t millisecond, std::function<void()> callable);
+  explicit RepeatedTimer(EventLoop *loop, time_t millisecond, std::function<void()> callable);
 
-    void disable();
-
-    bool enable(const std::function<void()> &callable_, time_t millisecond);
-
-    ~EventTimer();
+  void Disable();
 
 private:
-    friend class EventTimerHelper;
+  static void TimerCallable(evutil_socket_t /*fd*/, short /*what*/, void *arg);
 
-    EventPtr ptr;
-    std::function<void()> callable;
-    EventLoop *loop_;
-    EventTimerHelper *helper = nullptr;
+  EventLoop *loop_;
+  EventPtr ptr_;
+  std::function<void()> callable_;
 };
-}
-}
-#endif //CORE_EVENT_EVENT_TIMER_H
+} // namespace Core::Event

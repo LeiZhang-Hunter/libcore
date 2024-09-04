@@ -8,7 +8,7 @@ extern "C" {
 }
 #include <string>
 #include "build_expect.h"
-#include "unix_logger.h"
+#include <spdlog/spdlog.h>
 
 namespace Core {
 namespace OS {
@@ -22,7 +22,7 @@ public:
     UnixUdpServer(const std::string &ip, uint16_t port) {
         fd = socket(AF_INET, SOCK_DGRAM, 0);
         if (build_unlikely(fd <= 0)) {
-            SYSTEM_ERROR_LOG_TRACE(strerror(errno));
+            SPDLOG_ERROR(strerror(errno));
             return;
         }
 
@@ -52,13 +52,13 @@ public:
         servaddr.sin_port = htons(port);
         int ret = inet_pton(AF_INET, ip.c_str(), (void *) &servaddr.sin_addr);
         if (build_unlikely(ret != 1)) {
-            SYSTEM_ERROR_LOG_TRACE(strerror(errno));
+            SPDLOG_ERROR(strerror(errno));
             return false;
         }
 
         ret = bind(fd, (struct sockaddr *) &servaddr, sizeof(servaddr));
         if (build_unlikely(ret != 0)) {
-            SYSTEM_ERROR_LOG_TRACE(strerror(errno));
+            SPDLOG_ERROR(strerror(errno));
             return false;
         }
 

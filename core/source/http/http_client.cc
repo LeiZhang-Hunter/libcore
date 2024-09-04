@@ -1,13 +1,23 @@
 #include "http/http_client.h"
-extern "C" {
-#include <event2/bufferevent_ssl.h>
-#include <openssl/ssl.h>
-#include "http/ssl/openssl_hostname_validation.h"
-}
-
-#include <iostream>
-
-#include "os/unix_current_thread.h"
+#include <event2/buffer.h>                         // for evbuffer_add
+#include <event2/bufferevent.h>                    // for bufferevent_socket...
+#include <event2/bufferevent_ssl.h>                // for bufferevent_openss...
+#include <event2/http.h>                           // for evhttp_add_header
+#include <event2/http_struct.h>                    // for evhttp_request
+#include <openssl/rand.h>                          // for RAND_poll
+#include <openssl/ssl.h>                           // for SSL_CTX_get_cert_s...
+#include <openssl/x509.h>                          // for X509_NAME_oneline
+#include <spdlog/spdlog.h>                         // for SPDLOG_ERROR, SPDL...
+#include <stdio.h>                                 // for printf, NULL, size_t
+#include <strings.h>                               // for strcasecmp
+#include <stdexcept>                               // for runtime_error
+#include <utility>                                 // for move, pair
+#include "build_expect.h"                          // for build_unlikely
+#include "event/event_loop.h"                      // for EventLoop
+#include "http/http_client_response.h"             // for HttpClientResponse
+#include "http/ssl/openssl_hostname_validation.h"  // for Error, MatchFound
+#include "os/unix_current_thread.h"                // for currentLoop, loopS...
+#include "os/unix_util.h"                          // for getNowTime
 
 namespace Core {
 namespace Http {
@@ -34,7 +44,7 @@ static void http_request_done(struct evhttp_request *req, void *arg) {
     auto params = static_cast<CallbackArgs*>(arg);
 
     if (build_unlikely(!req)) {
-        SYSTEM_ERROR_LOG_TRACE("req is null; path:{};host:{}",  params->host);
+        SPDLOG_ERROR("req is null; path:{};host:{}",  params->host);
         /**
          * 这里已经出错了，在error里已经删除掉了，不要再次删除了
          */
@@ -50,7 +60,7 @@ static void http_request_done(struct evhttp_request *req, void *arg) {
     params->obj->setStatus(HTTP_CLIENT_FINISH);
 
     if (build_unlikely(!params->cb_)) {
-        SYSTEM_ERROR_LOG_TRACE("params->cb_ is null");
+        SPDLOG_ERROR("params->cb_ is null");
         params->obj->releaseArgs(params->index);
         return;
     }
@@ -73,27 +83,27 @@ static void http_request_done(struct evhttp_request *req, void *arg) {
 static void http_error_cb(enum evhttp_request_error error_code, void *arg) {
     switch (error_code) {
         case EVREQ_HTTP_TIMEOUT: {
-            SYSTEM_ERROR_LOG_TRACE("Timeout reached, also @see evhttp_connection_set_timeout()");
+            SPDLOG_ERROR("Timeout reached, also @see evhttp_connection_set_timeout()");
         }
             break;
         case EVREQ_HTTP_EOF: {
-            SYSTEM_ERROR_LOG_TRACE("EOF reached");
+            SPDLOG_ERROR("EOF reached");
         }
             break;
         case EVREQ_HTTP_INVALID_HEADER: {
-            SYSTEM_ERROR_LOG_TRACE("Error while reading header, or invalid header");
+            SPDLOG_ERROR("Error while reading header, or invalid header");
         }
             break;
         case EVREQ_HTTP_BUFFER_ERROR: {
-            SYSTEM_ERROR_LOG_TRACE("Error encountered while reading or writing");
+            SPDLOG_ERROR("Error encountered while reading or writing");
         }
             break;
         case EVREQ_HTTP_REQUEST_CANCEL: {
-            SYSTEM_ERROR_LOG_TRACE("The evhttp_cancel_request() called on this request.");
+            SPDLOG_ERROR("The evhttp_cancel_request() called on this request.");
         }
             break;
         case EVREQ_HTTP_DATA_TOO_LONG: {
-            SYSTEM_ERROR_LOG_TRACE("Body is greater then evhttp_connection_set_max_body_size()");
+            SPDLOG_ERROR("Body is greater then evhttp_connection_set_max_body_size()");
         }
             break;
     }
@@ -116,7 +126,7 @@ HttpClient::HttpClient(const std::string& requestUrl_, void (*cb_)(HttpClientRes
  * 这个函数并不会去触发http_error_cb
  */
 static void connection_close_cb(struct evhttp_connection *, void */*params*/) {
-    LOG_CONTENT_ERR("connection_close_cb");
+    SPDLOG_WARN("connection_close_cb");
 }
 
 /* See http://archives.seul.org/libevent/users/Jan-2013/msg00039.html */
@@ -188,34 +198,34 @@ void HttpClient::init() {
 #endif
 
     if (!OS::UnixCurrentThread::currentLoop) {
-        SYSTEM_ERROR_LOG_TRACE("OS::UnixCurrentThread::currentLoop is nullptr");
+        SPDLOG_ERROR("OS::UnixCurrentThread::currentLoop is nullptr");
         return;
     }
 
     if (!build_unlikely(OS::UnixCurrentThread::currentLoop->getEventBase())) {
-        SYSTEM_ERROR_LOG_TRACE("OS::UnixCurrentThread::currentLoop->getEventBase() is nullptr");
+        SPDLOG_ERROR("OS::UnixCurrentThread::currentLoop->getEventBase() is nullptr");
         return;
     }
 
-    http_uri = evhttp_uri_parse(requestUrl.c_str());
+    http_uri .Reset( evhttp_uri_parse(requestUrl.c_str()));
 
     scheme = evhttp_uri_get_scheme(http_uri.get());
-    if (scheme == NULL || (strcasecmp(scheme, "https") != 0 &&
+    if (scheme == nullptr || (strcasecmp(scheme, "https") != 0 &&
                            strcasecmp(scheme, "http") != 0)) {
-        SYSTEM_ERROR_LOG_TRACE("scheme error");
+        SPDLOG_ERROR("scheme error");
         return;
     }
 
     uri = evhttp_uri_get_path(http_uri.get());
 
     if (http_uri.get() == nullptr) {
-        SYSTEM_ERROR_LOG_TRACE("malformed url");
+        SPDLOG_ERROR("malformed url");
         return;
     }
 
     host = evhttp_uri_get_host(http_uri.get());
     if (host == nullptr) {
-        SYSTEM_ERROR_LOG_TRACE("url must have a host");
+        SPDLOG_ERROR("url must have a host");
         return;
     }
 
@@ -243,7 +253,7 @@ void HttpClient::init() {
             throw std::runtime_error("RAND_poll:" + requestUrl);
         }
 
-        ssl_ctx = SSL_CTX_new(SSLv23_client_method());
+        ssl_ctx .Reset( SSL_CTX_new(SSLv23_client_method()));
         if (!ssl_ctx.get()) {
             throw std::runtime_error(requestUrl + " SSL_CTX_new failed");
             return;
@@ -289,7 +299,7 @@ void HttpClient::init() {
                                          (void *) host);
 
         // Create OpenSSL bufferevent and stack evhttp on top of it
-        ssl = SSL_new(ssl_ctx.get());
+        ssl.Reset( SSL_new(ssl_ctx.get()));
         if (build_unlikely(!ssl)) {
             throw std::runtime_error("SSL_new(" + requestUrl + ") error");
         }
@@ -315,11 +325,11 @@ void HttpClient::init() {
 
 
 
-    conn = evhttp_connection_base_bufferevent_new(OS::UnixCurrentThread::loopSmartPtr()->getEventBase(), nullptr,
-          bev, host, port);
+    conn .Reset(evhttp_connection_base_bufferevent_new(OS::UnixCurrentThread::loopSmartPtr()->getEventBase(), nullptr,
+          bev, host, port));
 
     if (build_unlikely(!conn.get())) {
-        SYSTEM_ERROR_LOG_TRACE("conn.get() is null");
+        SPDLOG_ERROR("conn.get() is null");
         return;
     }
 
@@ -337,17 +347,17 @@ void HttpClient::init() {
 
 bool HttpClient::get(void* arg) {
     if (!build_unlikely(OS::UnixCurrentThread::currentLoop)) {
-        SYSTEM_ERROR_LOG_TRACE("OS::UnixCurrentThread::currentLoop is nullptr");
+        SPDLOG_ERROR("OS::UnixCurrentThread::currentLoop is nullptr");
         return false;
     }
 
     if (!build_unlikely(OS::UnixCurrentThread::currentLoop->getEventBase())) {
-        SYSTEM_ERROR_LOG_TRACE("OS::UnixCurrentThread::currentLoop->getEventBase() is nullptr");
+        SPDLOG_ERROR("OS::UnixCurrentThread::currentLoop->getEventBase() is nullptr");
         return false;
     }
 
     if (build_unlikely(!conn.get())) {
-        SYSTEM_ERROR_LOG_TRACE("conn is nullptr");
+        SPDLOG_ERROR("conn is nullptr");
         return false;
     }
 
@@ -363,7 +373,7 @@ bool HttpClient::get(void* arg) {
 
     struct evhttp_request *req = evhttp_request_new(http_request_done, args.get());
     if (!req) {
-        SYSTEM_ERROR_LOG_TRACE("request failed");
+        SPDLOG_ERROR("request failed");
         return false;
     }
 
@@ -375,7 +385,7 @@ bool HttpClient::get(void* arg) {
     evhttp_request_set_error_cb(req, http_error_cb);
     int ret = evhttp_make_request(conn.get(), req, EVHTTP_REQ_GET, uri.c_str());
     if (ret == -1) {
-        SYSTEM_ERROR_LOG_TRACE("evhttp_make_request failed");
+        SPDLOG_ERROR("evhttp_make_request failed");
         return false;
     }
     requestIndex++;
@@ -388,17 +398,17 @@ bool HttpClient::get(void* arg) {
 
 bool HttpClient::post(unsigned char* data, size_t length, void* arg) {
     if (!build_unlikely(OS::UnixCurrentThread::currentLoop)) {
-        SYSTEM_ERROR_LOG_TRACE("OS::UnixCurrentThread::currentLoop is nullptr");
+        SPDLOG_ERROR("OS::UnixCurrentThread::currentLoop is nullptr");
         return false;
     }
 
     if (!build_unlikely(OS::UnixCurrentThread::currentLoop->getEventBase())) {
-        SYSTEM_ERROR_LOG_TRACE("OS::UnixCurrentThread::currentLoop->getEventBase() is nullptr");
+        SPDLOG_ERROR("OS::UnixCurrentThread::currentLoop->getEventBase() is nullptr");
         return false;
     }
 
     if (build_unlikely(!conn.get())) {
-        SYSTEM_ERROR_LOG_TRACE("conn is nullptr");
+        SPDLOG_ERROR("conn is nullptr");
         return false;
     }
     auto args = std::make_unique<CallbackArgs>();
@@ -412,7 +422,7 @@ bool HttpClient::post(unsigned char* data, size_t length, void* arg) {
     args->loadRequestMetric(length);
     struct evhttp_request *req = evhttp_request_new(http_request_done, args.get());
     if (!req) {
-        SYSTEM_ERROR_LOG_TRACE("request failed");
+        SPDLOG_ERROR("request failed");
         return false;
     }
 
@@ -431,7 +441,7 @@ bool HttpClient::post(unsigned char* data, size_t length, void* arg) {
 
     int ret = evhttp_make_request(conn.get(), req, EVHTTP_REQ_POST, uri.c_str());
     if (ret == -1) {
-        SYSTEM_ERROR_LOG_TRACE("evhttp_make_request failed");
+        SPDLOG_ERROR("evhttp_make_request failed");
         return false;
     }
     requestIndex++;
