@@ -17,7 +17,7 @@
 #include "component/api.h"
 #include "event/event_buffer_channel.h"
 #include "event/event_channel.h"
-#include "os/unix_logger.h"
+
 #include "watcher.h"
 
 namespace Core::Component::Discovery {

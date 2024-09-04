@@ -6,9 +6,10 @@ extern "C" {
 #include <memory>
 #include <functional>
 #include <string>
+#include <spdlog/spdlog.h>
 
 #include "build_expect.h"
-#include "os/unix_logger.h"
+
 
 namespace Core {
 namespace Http {
@@ -37,7 +38,7 @@ public:
 
     bool doUsers(HttpRequest &request, HttpResponse &response) {
         if (build_unlikely(!uses)) {
-            SYSTEM_ERROR_LOG_TRACE("doUsers nullptr");
+            SPDLOG_ERROR("doUsers nullptr");
             return false;
         }
 

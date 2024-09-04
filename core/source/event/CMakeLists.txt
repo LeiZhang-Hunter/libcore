@@ -9,4 +9,5 @@ add_library(
     event_timer.cc)
 
 add_library(libcore::event ALIAS event)
-target_link_libraries(event PRIVATE libevent::core libevent::extra)
+target_include_directories(event PUBLIC ${libcore_INCLUDE_DIR})
+target_link_libraries(event PRIVATE spdlog::spdlog libevent::core libevent::extra)

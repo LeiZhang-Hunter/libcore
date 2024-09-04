@@ -1,21 +1,18 @@
 #pragma once
 
-extern "C" {
-#include <event2/http.h>
-}
+#include <cstddef>        // for size_t
+#include <map>             // for map
+#include <string>          // for basic_string, string
+#include <string_view>     // for string_view, hash
+#include <unordered_map>   // for unordered_map
+#include <vector>          // for vector
+#include "non_copyable.h"  // for Noncopyable
+struct evhttp_request;  // IWYU pragma: keep
 
-#include <string>
-#include <map>
-#include <vector>
-#include <unordered_map>
+using param = std::map<std::string, std::string>;
 
-#include "non_copyable.h"
-#include "event/event_smart_ptr.h"
 
-typedef std::map<std::string, std::string> param;
-
-namespace Core {
-namespace Http {
+namespace Core::Http {
 
 class HttpRequest :public Core::Noncopyable {
 
@@ -65,9 +62,6 @@ public:
 
     size_t rawLength();
 
-    ~HttpRequest() {
-    };
-
 private:
     void init();
     /**
@@ -88,5 +82,4 @@ private:
 
     std::string_view emptyString;
 };
-}
 }

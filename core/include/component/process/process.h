@@ -1,23 +1,21 @@
 #pragma once
 
-extern "C" {
 #include <signal.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-}
-
-#include <string>
-#include <sstream>
+#include <time.h>
 #include <memory>
+#include <string>
 #include <utility>
-
-
-#include "os/unix_logger.h"
+#include <vector>
+#include "component/timer_channel.h"
 #include "non_copyable.h"
 #include "non_moveable.h"
 #include "process_event.h"
-#include "os/unix_cgroup.h"
-#include "component/timer_channel.h"
+namespace Core { namespace Component { namespace Process { class Manager; } } }
+namespace Core { namespace Event { class EventLoop; } }
+namespace Core { namespace OS { class CGroup; } }
 
 namespace Core {
 namespace Component {
@@ -154,4 +152,3 @@ private:
 }
 }
 }
-

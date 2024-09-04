@@ -1,16 +1,17 @@
 #pragma once
 
 namespace Core {
-
-//不允许构造
 class Noncopyable {
 public:
+  Noncopyable(const Noncopyable &) = delete;
+  Noncopyable(Noncopyable &) = delete;
+  Noncopyable &operator=(const Noncopyable &) = delete;
 
-    Noncopyable(const Noncopyable&) = delete;
-    void operator=(const Noncopyable&) = delete;
+  Noncopyable(Noncopyable &&) = default;
+  Noncopyable &operator=(Noncopyable &&) = default;
 
 protected:
-    Noncopyable() = default;
-    ~Noncopyable() = default;
+  Noncopyable() = default;
+  ~Noncopyable() = default;
 };
-}
+} // namespace Core

@@ -1,14 +1,15 @@
-//
-// Created by zhanglei on 10/22/21.
-//
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-}
-#include "os/unix_logger.h"
-#include "os/unix_util.h"
-#include "os/unix_sysinfo.h"
+#include <errno.h>            // for EINTR, errno
+#include <fcntl.h>            // for open, O_NONBLOCK, O_RDONLY
+#include <spdlog/spdlog.h>    // for SPDLOG_WARN
+#include <stdint.h>           // for uint64_t
+#include <stdio.h>            // for BUFSIZ, sscanf
+#include <string.h>           // for memset
+#include <strings.h>          // for strcasecmp
+#include <sys/types.h>        // for ssize_t
+#include <unistd.h>           // for close, read
+#include <string>             // for basic_string, string
+#include "os/unix_sysinfo.h"  // for UnixSysInfo, StatusData, SysData
+#include "os/unix_util.h"     // for isFile, readline
 
 namespace Core {
 namespace OS {
@@ -16,13 +17,13 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
 
     memset(&data, 0, sizeof(data));
     if (!OS::isFile(procPath)) {
-        SYSTEM_WARNING_LOG_TRACE("{} is not file", procPath);
+        SPDLOG_WARN("{} is not file", procPath);
         return false;
     }
 
     int fd = open(procPath.c_str(), O_RDONLY|O_NONBLOCK);
     if (fd < 0) {
-        SYSTEM_WARNING_LOG_TRACE( "open {} failed", procPath);
+        SPDLOG_WARN( "open {} failed", procPath);
         return false;
     }
 
@@ -53,7 +54,7 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
 
     int ret = close(fd);
     if (ret != 0) {
-        SYSTEM_WARNING_LOG_TRACE( "close {} failed", procPath);
+        SPDLOG_WARN( "close {} failed", procPath);
     }
     //解析系统指标到内存
     ret = sscanf(context.c_str(),
@@ -94,10 +95,13 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
                  &(data.sigcatch),
                  &(data.wchan)
           );
-
+    if (ret != 35) {
+        SPDLOG_WARN( "sscanf failed");
+        return false;
+    }
     fd = open(procStatusPath.c_str(), O_RDONLY|O_NONBLOCK);
     if (fd < 0) {
-        SYSTEM_WARNING_LOG_TRACE( "open {} failed", procStatusPath);
+        SPDLOG_WARN( "open {} failed", procStatusPath);
         return false;
     }
 
@@ -118,13 +122,13 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
 
     ret = close(fd);
     if (ret != 0) {
-        SYSTEM_WARNING_LOG_TRACE( "close {} failed", procStatusPath);
+        SPDLOG_WARN( "close {} failed", procStatusPath);
     }
 
     //获取总cpu使用情况
     fd = open(statPath.c_str(), O_RDONLY|O_NONBLOCK);
     if (fd < 0) {
-        SYSTEM_WARNING_LOG_TRACE( "open {} failed", statPath);
+        SPDLOG_WARN( "open {} failed", statPath);
         return false;
     }
 
@@ -171,7 +175,7 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
 
     ret = close(fd);
     if (ret != 0) {
-        SYSTEM_WARNING_LOG_TRACE( "close {} failed", procStatusPath);
+        SPDLOG_WARN( "close {} failed", procStatusPath);
     }
 
     procCpuRecordTime = procCpuTime;

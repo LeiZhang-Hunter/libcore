@@ -1,18 +1,20 @@
 #pragma once
 
-#include <string>
-#include "non_copyable.h"
-#include "event/event_smart_ptr.h"
-namespace Core {
-namespace Http {
+#include <event2/buffer.h>          // for evbuffer_new
+#include <event2/http.h>            // for evhttp_request_get_output_headers
+#include <cstddef>                  // for size_t
+#include <string>                   // for string
+#include "event/event_smart_ptr.h"  // for EventBufferPtr
+#include "non_copyable.h"           // for Noncopyable
+struct evhttp_request;
+
+namespace Core::Http {
 
 class HttpResponse :public Core::Noncopyable {
 
 public:
-//    HttpResponse(struct evhttp_request *request_, const char* uri)
-    HttpResponse(struct evhttp_request *request_)
+    explicit HttpResponse(struct evhttp_request *request_)
     :
-//    httpUri(uri),
     request(request_),
     httpBuffer(evbuffer_new()),
     output_headers(evhttp_request_get_output_headers(request)) {};
@@ -29,19 +31,17 @@ public:
         return responseSize;
     }
 
-    ~HttpResponse() {
-    };
 
 private:
     /**
      * @brief 请求句柄
-     * 
+     *
      */
-    struct evhttp_request *request;
+    evhttp_request *request;
 
     /**
      * @brief buffer
-     * 
+     *
      */
     Event::EventBufferPtr httpBuffer;
 
@@ -51,4 +51,4 @@ private:
     struct evkeyvalq *output_headers;
 };
 }
-}
+

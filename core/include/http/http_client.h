@@ -1,24 +1,20 @@
 #pragma once
+#include <openssl/ssl.h>            // for SSL_CTX_free, SSL_free
+#include <openssl/types.h>          // for SSL, SSL_CTX, X509_STORE
+#include <stddef.h>                 // for size_t
+#include <stdint.h>                 // for uint32_t, int64_t
+#include <map>                      // for map
+#include <memory>                   // for unique_ptr
+#include <string>                   // for basic_string, string
+#include <unordered_map>            // for unordered_map
+#include "event/event_smart_ptr.h"  // for EventSmartPtr, EventConnPtr, Even...
+#include "non_copyable.h"           // for Noncopyable
+namespace Core { namespace Http { class HttpClientResponse; } }
+struct bufferevent;
 
-#include <string>
 
-extern "C" {
-#include <openssl/ssl.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#include <event2/http.h>
-}
 
-#include <map>
-#include <unordered_map>
-
-#include "event/event_smart_ptr.h"
-#include "http_client_response.h"
-#include "build_expect.h"
-#include "os/unix_logger.h"
-
-namespace Core {
-namespace Http {
+namespace Core::Http {
 
 class HttpClient;
 /**
@@ -69,8 +65,8 @@ enum HttpClientStatus {
     HTTP_CLIENT_CLOSE = 4
 };
 
-typedef Event::EventSmartPtr<SSL, SSL_free> SslPtr;
-typedef Event::EventSmartPtr<SSL_CTX, SSL_CTX_free> SslCTXPtr;
+using SslPtr = Event::EventSmartPtr<SSL, SSL_free>;
+using SslCTXPtr = Event::EventSmartPtr<SSL_CTX, SSL_CTX_free>;
 /**
  * Http客户端,这个类不是线程安全的，不要去在多线程中调用
  */
@@ -175,5 +171,4 @@ private:
 
     SslCTXPtr ssl_ctx;
 };
-}
 }

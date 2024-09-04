@@ -1,7 +1,8 @@
 #include "http/http_response.h"
+#include <event2/http_struct.h>
 
-namespace Core {
-namespace Http {
+
+namespace Core::Http {
 
 bool HttpResponse::response(short code, const std::string& response) {
     evbuffer_add_printf(httpBuffer.get(), "%s", response.c_str());
@@ -15,4 +16,4 @@ bool HttpResponse::header(const std::string &key, const std::string &value) {
     return true;
 };
 }
-}
+

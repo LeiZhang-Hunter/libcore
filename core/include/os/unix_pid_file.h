@@ -1,14 +1,10 @@
 #pragma once
-
-extern "C" {
-#include <sys/fcntl.h>
-}
-
-#include <cerrno>
-#include <cstring>
-#include <string>
-
-#include "non_copyable.h"
+#include <fcntl.h>         // for flock
+#include <sys/types.h>     // for pid_t
+#include <cerrno>          // for errno
+#include <cstring>         // for strerror
+#include <string>          // for basic_string, string
+#include "non_copyable.h"  // for Noncopyable
 
 namespace Core {
 namespace OS {
@@ -61,7 +57,7 @@ public:
 
 private:
     //文件锁
-    struct flock fileLock;
+    struct flock fileLock{};
 
     //要守护的文件描述符
     int pidFd = -1;

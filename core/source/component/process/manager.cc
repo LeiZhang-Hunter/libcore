@@ -1,17 +1,6 @@
-/**
-******************************************************************************
-* @file           : manager.cc
-* @author         : zhanglei
-* @brief          : None
-* @attention      : None
-* @date           : 2024/2/11
-******************************************************************************
-*/
-//
-// Created by zhanglei on 2024/2/11.
-//
-
 #include "component/process/manager.h"
+#include <sys/wait.h>
+#include "component/process/process.h"
 
 namespace Core {
 namespace Component {

@@ -1,20 +1,16 @@
 #pragma once
 #include "pure.h"
 
-namespace Core {
-namespace Component {
-namespace Process {
+namespace Core::Component::Process {
 class Manager;
 class ProcessEvent {
 public:
-    virtual void onCreate() PURE;
-    virtual void onStart() PURE;
-    virtual void onStop() PURE;
-    virtual void onDestroy() PURE;
-    virtual void onReload() PURE;
-    virtual void onExit(Manager* m) PURE;
-    virtual ~ProcessEvent() = default;
+  virtual void onCreate() PURE;
+  virtual void onStart() PURE;
+  virtual void onStop() PURE;
+  virtual void onDestroy() PURE;
+  virtual void onReload() PURE;
+  virtual void onExit(Manager *manager) PURE;
+  virtual ~ProcessEvent() = default;
 };
-}
-}
-}
+} // namespace Core::Component::Process

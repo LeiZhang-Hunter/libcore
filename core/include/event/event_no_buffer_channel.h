@@ -1,20 +1,20 @@
 #pragma once
 
-extern "C" {
-#include <event.h>
-#include <unistd.h>
-}
-#include <memory>
+#include <event2/event.h>
+#include <stdint.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <functional>
 #include <iostream>
-#include "non_copyable.h"
+#include <memory>
 #include "event_channel.h"
 #include "event_smart_ptr.h"
+#include "non_copyable.h"
+namespace Core { namespace Event { class EventLoop; } }
+struct bufferevent;
 
 namespace Core {
 namespace Event {
-
-class EventLoop;
 
 typedef std::function<void(EventChannel *channel)> EventNoBufferCallable;
 

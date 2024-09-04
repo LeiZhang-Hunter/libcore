@@ -1,15 +1,11 @@
 #pragma once
 
-extern "C" {
-#include <unistd.h>
-#include <sys/syscall.h>
-}
-
-#include <memory>
-#include <thread>
-#include "build_expect.h"
-#include "os/unix_thread.h"
-#include "event/event_loop.h"
+#include <sys/syscall.h>   // for SYS_gettid
+#include <unistd.h>        // for syscall
+#include <memory>          // for shared_ptr
+#include "build_expect.h"  // for build_unlikely
+namespace Core { namespace Event { class EventLoop; } }
+namespace Core { namespace OS { class UnixThread; } }
 
 namespace Core {
 namespace OS {

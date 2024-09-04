@@ -14,3 +14,6 @@
 	path = third_party/libcgroup
 	url = git@github.com:libcgroup/libcgroup.git
 	commit = 16a657c # libcgroup v3.1.0 https://github.com/libcgroup/libcgroup/releases/tag/v3.1.0
+[submodule "third_party/spdlog"]
+	path = third_party/spdlog
+	url = https://github.com/gabime/spdlog.git

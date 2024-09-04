@@ -1,4 +1,7 @@
 #include "http/http_router.h"
+#include <stddef.h>                // for size_t
+#include "http/http_attributes.h"  // for HttpAttributes
+namespace Core { namespace Http { class HttpAction; } }
 
 namespace Core {
 namespace Http {

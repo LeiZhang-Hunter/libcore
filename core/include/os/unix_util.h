@@ -16,6 +16,8 @@ extern "C" {
 #include <ifaddrs.h>
 }
 
+#include <spdlog/spdlog.h>
+#include <cstring>
 #include <string>
 #include <fstream>
 #include <iomanip>
@@ -87,7 +89,7 @@ static inline ssize_t system_write(const std::string &level, const std::string &
     UnixTimestamp time;
     data = data + time.toMicroDate() + " [level:" + level + "]" + " content: " + message + ";errno:" + std::to_string(errno) + ";errmsg:" +
            strerror(errno) + "\n";
-    std::cerr << data << std::endl;
+    SPDLOG_ERROR(data);
     int writeFd = open("/var/log/agent-error.log", O_CREAT | O_RDWR | O_APPEND, 0664);
     ssize_t res = writen(writeFd, (void *) data.c_str(), data.size());
     close(writeFd);
@@ -231,7 +233,7 @@ static inline bool getSockAddress(int fd, const struct sockaddr_in &sa) {
 //  读取主机id，用来区分不同物理机，先读取/etc/machineid，如果读不到则把cpuid和物理网卡地址做xxhash
 inline static uint64_t getMachineId() {
     // 优先读取 /etc/machine-id 文件
-    Common::XXHash64 hashUtil(0);
+    Core::Common::XXHash64 hashUtil(0);
     std::ifstream machine_id_file("/etc/machine-id");
     if (machine_id_file.is_open()) {
         std::string machine_id;

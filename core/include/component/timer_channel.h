@@ -6,8 +6,7 @@
 
 #include "event/event_buffer_channel.h"
 
-namespace Core {
-namespace Component {
+namespace Core::Component {
 
 /**
  * Utility helper functions for Timer implementation.
@@ -43,40 +42,40 @@ public:
     }
 };
 
-class TimerChannel :public OS::UnixTimer, public Core::Noncopyable {
+class TimerChannel : public OS::UnixTimer,
+                     public Core::Noncopyable {
 public:
-    
     /**
      * @brief 定时器管道，单位是秒
-     * 
+     *
      * 主循环
      * @param loop_
-     * 秒 
+     * 秒
      * @param millisecond
      */
-    TimerChannel(const std::shared_ptr<Event::EventLoop> &loop, const std::function<void()>& cb)
-     : TimerChannel(loop.get(), cb) {}
-    TimerChannel(Event::EventLoop* loop, const std::function<void()>& cb)
-    : cb_(cb), loop_(loop) {
+    TimerChannel(const std::shared_ptr<Event::EventLoop>& loop, const std::function<void()>& cb)
+        : TimerChannel(loop.get(), cb) {
+    }
+    TimerChannel(Event::EventLoop* loop, const std::function<void()>& cb) : cb_(cb), loop_(loop) {
         evtimer_assign(
-        &raw_event_, loop_->getEventBase(),
-        [](evutil_socket_t, short, void* arg) -> void {
-            auto timer = static_cast<TimerChannel*>(arg);
-            if (!timer) {
-                return;
-            }
+            &raw_event_, loop_->getEventBase(),
+            [](evutil_socket_t, short, void* arg) -> void {
+                auto timer = static_cast<TimerChannel*>(arg);
+                if (!timer) {
+                    return;
+                }
 
-            if (!timer->cb_) {
-                return;
-            }
-            timer->cb_();
-        },
-        this);
+                if (!timer->cb_) {
+                    return;
+                }
+                timer->cb_();
+            },
+            this);
     }
 
-    void enable(const std::chrono::milliseconds d) {
-        timeval tv;
-        TimerUtils::durationToTimeval(d, tv);
+    void enable(const std::chrono::milliseconds duration) {
+        struct timeval tv{};
+        TimerUtils::durationToTimeval(duration, tv);
 
         event_add(&raw_event_, &tv);
     }
@@ -97,7 +96,6 @@ private:
     std::function<void()> cb_;
     Event::EventLoop* loop_;
     std::shared_ptr<Event::EventBufferChannel> channel_;
-    event raw_event_;
+    struct event raw_event_;
 };
-}
-}
+} // namespace Core::Component
