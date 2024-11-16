@@ -1,22 +1,24 @@
 #pragma once
 
+#include <event2/bufferevent.h>
+#include <event2/bufferevent_struct.h>
+#include <event2/event.h>
+#include <sys/time.h>
+
+#include <functional>
+#include <memory>
+
 #include "event/event_loop.h"
 #include "event/event_smart_ptr.h"
 #include "event_channel.h"
 #include "non_copyable.h"
-#include <event2/bufferevent.h>
-#include <event2/bufferevent_struct.h>
-#include <event2/event.h>
-#include <functional>
-#include <memory>
-#include <sys/time.h>
 
 namespace Core::Event {
 
 typedef std::function<void(struct bufferevent *bev, EventChannel *ctx)> EventCallable;
 
 class EventBufferChannel : public EventChannel, public Core::Noncopyable {
-public:
+ public:
   EventBufferChannel(const std::shared_ptr<EventLoop> &loop_, int fd)
       : EventChannel(loop_, fd), bufptr(bufferevent_socket_new(loop->getEventBase(), this->getChannelFd(), 0)) {}
 
@@ -234,7 +236,7 @@ public:
    * @return true
    * @return false
    */
-  bool enableWriting(double second) override{
+  bool enableWriting(double second) override {
     time.tv_sec = 0;
     time.tv_usec = second * 1000 * 1000;
     events |= EV_WRITE;
@@ -273,11 +275,11 @@ public:
 
   virtual ~EventBufferChannel() {
 #ifdef USE_DEBUG
-    std::cout << "~EventBufferChannel" << std::endl;
+    SPDLOG_DEBUG("~EventBufferChannel");
 #endif
   }
 
-private:
+ private:
   static void onEvent(bufferevent *ev, short flag, void *arg);
 
   /**
@@ -319,4 +321,4 @@ private:
 
   EventBufferEventPtr bufptr;
 };
-} // namespace Core::Event
+}  // namespace Core::Event

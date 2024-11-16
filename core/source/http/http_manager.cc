@@ -1,18 +1,18 @@
 #include "http/http_manager.h"
-#include "build_expect.h"               // for build_unlikely
-#include "component/thread_container.h" // for UnixThreadContainer
-#include "http/http_action.h"           // for HttpAction
-#include "http/http_config.h"           // for HttpConfig
-#include "http/http_request.h"          // for HttpRequest
-#include "http/http_response.h"         // for HttpResponse
-#include "http/http_router.h"           // for HttpRouter
-#include "http/http_worker.h"           // for HttpWorker
-#include "os/unix_thread.h"             // for UnixThread
-#include <cstddef>                      // for size_t
-#include <event2/http.h>                // for evhttp_cmd_type, HTTP_BADREQ...
-#include <event2/http_struct.h>         // for evhttp_request
-#include <event2/thread.h>              // for evthread_use_pthreads
-#include <functional>                   // for ref, reference_wrapper
+#include "build_expect.h"
+#include "component/thread_container.h"
+#include "http/http_action.h"
+#include "http/http_config.h"
+#include "http/http_request.h"
+#include "http/http_response.h"
+#include "http/http_router.h"
+#include "http/http_worker.h"
+#include "os/unix_thread.h"
+#include <cstddef>
+#include <event2/http.h>
+#include <event2/http_struct.h>
+#include <event2/thread.h>
+#include <functional>
 
 namespace Core::Event {
 class EventLoop;

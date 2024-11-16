@@ -11,4 +11,12 @@ add_library(
 add_library(libcore::http ALIAS http)
 
 target_include_directories(http PUBLIC ${libcore_INCLUDE_DIR})
-target_link_libraries(http PRIVATE spdlog::spdlog libcore::common libcore::component fmt::fmt libevent::core libevent::extra libevent::pthreads)
+target_link_libraries(
+    http
+    PRIVATE spdlog::spdlog
+            libcore::common
+            libcore::component
+            fmt::fmt
+            libevent::core
+            libevent::extra
+            libevent::pthreads)

@@ -1,7 +1,6 @@
 #include "os/unix_cgroup.h"
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
-
+#include <fmt/core.h>       
+#include <spdlog/spdlog.h>  
 
 namespace Core::OS {
 CGroup::CGroup(const std::string &name) {

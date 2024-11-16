@@ -1,14 +1,19 @@
 #pragma once
 
-#include <functional>         // for function
-#include <memory>             // for shared_ptr, make_shared, enable_shared_...
-#include <string>             // for string, hash
-#include <string_view>        // for string_view
-#include <unordered_map>      // for unordered_map
-#include <vector>             // for vector
-#include "http_attributes.h"  // for HttpAttributes
-#include "non_copyable.h"     // for Noncopyable
-namespace Core { namespace Http { class HttpAction; } }
+#include <functional>
+#include <memory>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+
+#include "http_attributes.h"
+#include "non_copyable.h"
+namespace Core {
+namespace Http {
+class HttpAction;
+}
+}  // namespace Core
 
 namespace Core {
 namespace Http {

@@ -1,12 +1,3 @@
-/**
-******************************************************************************
-* @file           : process.cc
-* @author         : zhanglei
-* @brief          : None
-* @attention      : None
-* @date           : 2024/2/11
-******************************************************************************
-*/
 #include "component/process/process.h"
 #include "component/process/manager.h"
 #include "os/unix_cgroup.h"
@@ -32,8 +23,7 @@ Process::Process(const std::string &command, Event::EventLoop *loop)
                                              onRestore();
                                              return;
                                            })),
-      loop_(loop) {
-  command_ = command;
+      command_(command), loop_(loop) {
   std::stringstream ss(command);
   std::string token;
   while (ss >> token) {
@@ -101,22 +91,20 @@ void Process::onExit(Manager *manager) {
 }
 
 void Process::onRestore() {
-  if (!this->m) {
+  if (m == nullptr) {
     return;
   }
   std::unique_ptr<Process> process = std::make_unique<Process>(command_, loop_);
   process->restoreCount = restoreCount;
   process->setCGroup(cgroup_);
-  auto iter = this->m->maps.find(getPid());
-  if (iter != this->m->maps.end()) {
-    this->m->maps.erase(iter);
+  auto iter = m->maps.find(getPid());
+  if (iter != m->maps.end()) {
+    m->maps.erase(iter);
   }
 
   if (!process->execute()) {
     return;
   }
-  if (this->m) {
-    this->m->maps[process->getPid()] = std::move(process);
-  }
+  m->maps[process->getPid()] = std::move(process);
 }
 } // namespace Core::Component::Process

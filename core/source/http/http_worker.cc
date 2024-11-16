@@ -1,12 +1,16 @@
 #include "http/http_worker.h"
-#include <arpa/inet.h>               // for htons
-#include <fcntl.h>                   // for fcntl, F_GETFL, F_SETFL, O_NONBLOCK
-#include <netinet/in.h>              // for sockaddr_in, INADDR_ANY, in_addr
-#include <sys/socket.h>              // for setsockopt, AF_INET, SOL_SOCKET
-#include <cstring>                   // for memset
-#include <memory>                    // for __shared_ptr_access, shared_ptr
-#include "event/event_loop.h"        // for EventLoop
-#include "os/unix_current_thread.h"  // for currentLoop
+
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <spdlog/spdlog.h>
+#include <sys/socket.h>
+
+#include <cstring>
+#include <memory>
+
+#include "event/event_loop.h"
+#include "os/unix_current_thread.h"
 
 namespace Core::Http {
 
@@ -21,7 +25,7 @@ int HttpWorker::openServer() const {
   setsockopt(nfd, SOL_SOCKET, SO_REUSEADDR, (char *)&one, sizeof(int));
   setsockopt(nfd, SOL_SOCKET, SO_REUSEPORT, (char *)&one, sizeof(int));
 
-  struct sockaddr_in addr{};
+  struct sockaddr_in addr {};
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = INADDR_ANY;
@@ -29,24 +33,18 @@ int HttpWorker::openServer() const {
 
   int r = bind(nfd, (struct sockaddr *)&addr, sizeof(addr));
   if (r < 0) {
-#ifdef USE_DEBUG
-    std::cout << "Error11" << std::endl;
-#endif
-    //        THREAD_NOTICE_LOG_TRACE("bind socket error" + std::to_string(port))
+    SPDLOG_TRACE("bind socket error" + std::to_string(port));
     return -1;
   }
   r = listen(nfd, 1024);
   if (r < 0) {
-#ifdef USE_DEBUG
-    std::cout << "listen Error" << std::endl;
-#endif
-    //        THREAD_NOTICE_LOG_TRACE("listen error")
+    SPDLOG_ERROR("listen Error");
     return -1;
   }
 
   int flags;
   if ((flags = fcntl(nfd, F_GETFL, 0)) < 0 || fcntl(nfd, F_SETFL, flags | O_NONBLOCK) < 0) {
-    //        THREAD_NOTICE_LOG_TRACE("fcntl O_NONBLOCK error")
+    SPDLOG_ERROR("fcntl O_NONBLOCK error");
     return -1;
   }
 
@@ -72,7 +70,7 @@ void HttpWorker::init(Event::EventLoop *loop) {
   bound = evhttp_accept_socket_with_handle(httpHandle.get(), listener);
 
   if (bound == nullptr) {
-    //        THREAD_ERROR_LOG_TRACE("Error evhttp_accept_socket");
+    SPDLOG_TRACE("Error evhttp_accept_socket");
     return;
   }
 
@@ -89,4 +87,4 @@ HttpWorker::~HttpWorker() {
     close(listener);
   }
 }
-} // namespace Core::Http
+}  // namespace Core::Http

@@ -2,19 +2,16 @@
 #include <sys/wait.h>
 #include "component/process/process.h"
 
-namespace Core {
-namespace Component {
-namespace Process {
+namespace Core::Component::Process {
 void Manager::onExit(int /* sig */, short /* events */, void *param) {
-    pid_t pid;
-    int stat;
-    pid = waitpid(-1, &stat, WNOHANG);
+    int stat = 0;
+    pid_t const pid = waitpid(-1, &stat, WNOHANG);
     if (pid <= 0) {
         return;
     }
 
-    auto manager = static_cast<Manager*>(param);
-    if (!manager) {
+    auto *manager = static_cast<Manager*>(param);
+    if (manager == nullptr) {
         return;
     }
 
@@ -42,8 +39,5 @@ void Manager::onExit(int /* sig */, short /* events */, void *param) {
     }
     iter->second->setStatus(EXITED);
     iter->second->onExit(manager);
-    return;
-}
-}
 }
 }
