@@ -8,6 +8,7 @@ extern "C" {
 }
 #include <string>
 #include "build_expect.h"
+#include "os/unix_util.h"
 #include <spdlog/spdlog.h>
 
 namespace Core {
