@@ -2,6 +2,7 @@
 extern "C" {
 #include <limits.h>
 }
+#include <string>
 
 namespace Core::OS {
 
