@@ -35,8 +35,6 @@ public:
     void onCreate() {};
     void onDelete() {};
 
-private:
-
     void setPort(uint16_t port_) {
         port = port_;
     }
@@ -49,6 +47,8 @@ private:
         timeout = timeout_;
     }
 
+
+private:
     /**
      * @brief 端口
      * 
