@@ -1,21 +1,9 @@
-/**
-******************************************************************************
-* @file           : watcher.h
-* @author         : zhanglei
-* @brief          : None
-* @attention      : None
-* @date           : 2024/2/11
-******************************************************************************
-*/
-//
-// Created by zhanglei on 2024/2/11.
-//
-
 #pragma once
 
 extern "C" {
 #include <sys/inotify.h>
 #include <unistd.h>
+#include <fcntl.h>
 }
 #include <spdlog/spdlog.h>
 #include <string>

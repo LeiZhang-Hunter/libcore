@@ -1,18 +1,17 @@
-#include <errno.h>            // for EINTR, errno
-#include <fcntl.h>            // for open, O_NONBLOCK, O_RDONLY
-#include <spdlog/spdlog.h>    // for SPDLOG_WARN
-#include <stdint.h>           // for uint64_t
-#include <stdio.h>            // for BUFSIZ, sscanf
-#include <string.h>           // for memset
-#include <strings.h>          // for strcasecmp
-#include <sys/types.h>        // for ssize_t
-#include <unistd.h>           // for close, read
-#include <string>             // for basic_string, string
-#include "os/unix_sysinfo.h"  // for UnixSysInfo, StatusData, SysData
-#include "os/unix_util.h"     // for isFile, readline
+#include <cerrno>
+#include <fcntl.h>
+#include <spdlog/spdlog.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <strings.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <string>
+#include "os/unix_sysinfo.h"
+#include "os/unix_util.h"
 
-namespace Core {
-namespace OS {
+namespace Core::OS {
 bool UnixSysInfo::load(SysData& data, StatusData& status) {
 
     memset(&data, 0, sizeof(data));
@@ -60,7 +59,7 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
     ret = sscanf(context.c_str(),
                  "%d %s %c %d %d %d %d %d %u %u %u %u %u %d %d %d %d %d %d %u %u %d %u %u %u %u %u %u %u %u %d %d %d %d %u",
                  &(data.pid),
-                 (data.exName),
+                 &(data.exName[0]),
                  &(data.state),
                  &(data.ppid),
                  &(data.pgrp),
@@ -183,4 +182,4 @@ bool UnixSysInfo::load(SysData& data, StatusData& status) {
     return true;
 }
 }
-}
+

@@ -5,8 +5,8 @@
 #include "os/unix_current_thread.h"
 #include "os/unix_thread.h"
 
-namespace Core {
-namespace Event {
+
+namespace Core::Event {
 
     EventQueue::EventQueue(const std::shared_ptr<OS::UnixThread> &threadObject) : thread(threadObject) {};
 
@@ -47,4 +47,4 @@ namespace Event {
         }
     }
 }
-}
+

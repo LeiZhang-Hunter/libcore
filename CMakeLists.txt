@@ -15,7 +15,7 @@ if(NOT DEFINED PROJECT_NAME)
         set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU})
     endif()
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_compile_options(-O0 -g)
         if(SANITIZER_TYPE STREQUAL "address")
             add_compile_options(-fsanitize=address)
@@ -26,7 +26,7 @@ if(NOT DEFINED PROJECT_NAME)
         endif()
     else()
         add_compile_options(-O3)
-    endif ()
+    endif()
 endif()
 
 # options

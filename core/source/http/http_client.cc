@@ -33,7 +33,7 @@ static int ignore_cert = 1;
 void CallbackArgs::loadRequestMetric(size_t length) {
     //上报记录信息
 #if USE_DEBUG
-    std::cout << "loadRequestMetric:" << length << std::endl;
+    SPDLOG_DEBUG("loadRequestMetric: {}", length);
 #else
     (void)length;
 #endif
@@ -67,7 +67,7 @@ static void http_request_done(struct evhttp_request *req, void *arg) {
 
 #ifdef USE_DEBUG
     if (params->method == "post" && !req) {
-        std::cout << "post req is null" << std::endl;
+        SPDLOG_WARN("post req is null" );
     }
 //    std::cout << "nowtime:" << OS::getNowTime() << std::endl;
 //    std::cout << "beginTime:" << params->beginTime << std::endl;
@@ -194,7 +194,7 @@ static int cert_verify_callback(X509_STORE_CTX *x509_ctx, void *arg)
 
 void HttpClient::init() {
 #ifdef USE_DEBUG
-    std::cout << "HttpClient::init(" << requestUrl << ")" << std::endl;
+    SPDLOG_DEBUG("HttpClient::init({})", requestUrl);
 #endif
 
     if (!OS::UnixCurrentThread::currentLoop) {
@@ -462,8 +462,8 @@ void HttpClient::releaseArgs(uint32_t index) {
 
 HttpClient::~HttpClient() {
 #ifdef USE_DEBUG
-    std::cout << "~HttpClient:" << status << std::endl;
-    std::cout << "~HttpClient ptr:" << this << std::endl;
+    SPDLOG_DEBUG("~HttpClient:{}", int(status));
+    SPDLOG_DEBUG("~HttpClient ptr:{}", static_cast<void*>(this));
 #endif
 }
 }

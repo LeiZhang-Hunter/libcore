@@ -1,11 +1,14 @@
 #include "event/event_timer.h"
-#include "event/event_loop.h"
-#include "event2/event.h"
+
 #include <event2/event_compat.h>
-#include <functional>
 #include <spdlog/spdlog.h>
 #include <sys/time.h>
+
+#include <functional>
 #include <utility>
+
+#include "event/event_loop.h"
+#include "event2/event.h"
 
 namespace Core::Event {
 RepeatedTimer::RepeatedTimer(const std::shared_ptr<EventLoop> &loop, time_t millisecond, std::function<void()> callable)
@@ -13,7 +16,6 @@ RepeatedTimer::RepeatedTimer(const std::shared_ptr<EventLoop> &loop, time_t mill
 
 RepeatedTimer::RepeatedTimer(EventLoop *loop, time_t millisecond, std::function<void()> callable)
     : loop_(loop), callable_(std::move(callable)) {
-
   if (loop_ == nullptr) {
     return;
   }
@@ -26,7 +28,7 @@ RepeatedTimer::RepeatedTimer(EventLoop *loop, time_t millisecond, std::function<
 
   ptr_.Reset(event);
 
-  struct timeval time_val{};
+  struct timeval time_val {};
   constexpr time_t kMillisecond = 1000;
   time_val.tv_sec = (millisecond / kMillisecond);
   time_val.tv_usec = (millisecond % kMillisecond);
@@ -49,4 +51,4 @@ void RepeatedTimer::TimerCallable(evutil_socket_t /*fd*/, short /*what*/, void *
   }
 }
 
-} // namespace Core::Event
+}  // namespace Core::Event

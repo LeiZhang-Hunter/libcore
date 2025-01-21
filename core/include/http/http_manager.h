@@ -1,10 +1,10 @@
 #pragma once
 
-#include "component/api.h" // for Component
-#include "http_config.h"   // for HTTP_MANAGER_NAME
-#include "non_copyable.h"  // for Noncopyable
-#include <memory>          // for shared_ptr
-#include <string>          // for string, basic_string
+#include "component/api.h"
+#include "http_config.h"
+#include "non_copyable.h"
+#include <memory>
+#include <string>
 namespace Core::Component {
 class UnixThreadContainer; // IWYU pragma: keep
 } // namespace Core::Component

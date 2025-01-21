@@ -1,11 +1,11 @@
 #pragma once
 
-#include <event2/http.h>            // for evhttp_del_accept_socket
-#include <cstdint>                 // for uint16_t
-#include <unistd.h>                 // for close
-#include <string>                   // for string, basic_string
-#include "event/event_smart_ptr.h"  // for EventHttpPtr
-#include "non_copyable.h"           // for Noncopyable
+#include <event2/http.h>
+#include <cstdint>
+#include <unistd.h>
+#include <string>
+#include "event/event_smart_ptr.h"
+#include "non_copyable.h"
 namespace Core { namespace Event { class EventLoop; } }
 
 

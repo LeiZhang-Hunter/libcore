@@ -1,14 +1,12 @@
 #include "os/unix_pid_file.h"
-#include <fcntl.h>          // for flock, fcntl, open, F_SETLK, F_WRLCK
-#include <spdlog/spdlog.h>  // for SPDLOG_ERROR, SPDLOG_WARN
-#include <stdio.h>          // for SEEK_SET
-#include <stdlib.h>         // for exit, atoi
-#include <unistd.h>         // for close, ftruncate, getpid, lseek, read, write
-#include <sstream>          // for basic_stringstream, basic_ostream::operat...
+#include <fcntl.h>
+#include <spdlog/spdlog.h>
+#include <cstdio>
+#include <cstdlib>
+#include <unistd.h>
+#include <sstream>
 
-
-namespace Core {
-namespace OS {
+namespace Core::OS {
 UnixPidFile::UnixPidFile(const std::string &pidFile, int flag) {
     //检查pid文件
     pidFd = ::open(pidFile.c_str(), flag, 0777);
@@ -76,4 +74,4 @@ UnixPidFile::~UnixPidFile() {
     }
 }
 }
-}
+

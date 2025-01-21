@@ -1,11 +1,11 @@
 #include "event/event_channel.h"
-#include <errno.h>
+#include <cerrno>
 #include <spdlog/spdlog.h>
-#include <string.h>
+#include <cstring>
 #include "event/event_loop.h"
 
-namespace Core {
-namespace Event {
+
+namespace Core::Event {
 /**
 * @brief 关闭描述符
 *
@@ -41,4 +41,4 @@ void EventChannel::shutdownRead() {
 }
 }
 
-}
+

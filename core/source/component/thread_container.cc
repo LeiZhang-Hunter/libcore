@@ -1,19 +1,18 @@
 #include "component/thread_container.h"
-#include <spdlog/spdlog.h>            // for SPDLOG_ERROR
-#include <utility>                    // for pair
-#include "os/unix_countdown_latch.h"  // for UnixCountDownLatch
+#include <spdlog/spdlog.h>
+#include <utility>
+#include "os/unix_countdown_latch.h"
 
-namespace Core {
-namespace Component {
+
+namespace Core::Component {
 
 void UnixThreadContainer::start() {
     std::shared_ptr<OS::UnixCountDownLatch> latch = std::make_shared<OS::UnixCountDownLatch>(size());
-    for(auto iter = container.begin(); iter != container.end(); iter++) {
-        iter->second->addInitCallable([latch] {
+    for(auto &item : container) {
+      item.second->addInitCallable([latch] {
             latch->down();
         });
-        bool ret = iter->second->start();
-        if (!ret) {
+        if (!item.second->start()) {
             SPDLOG_ERROR("create thread failed!");
         }
     }
@@ -21,8 +20,8 @@ void UnixThreadContainer::start() {
 }
 
 void UnixThreadContainer::stop() {
-    for(auto iter = container.begin(); iter != container.end(); iter++) {
-        iter->second->stop();
+    for(auto &item : container) {
+      item.second->stop();
     }
 }
 
@@ -49,8 +48,8 @@ bool UnixThreadContainer::task(pid_t index, const Event::Task& task) {
 }
 
 void UnixThreadContainer::broadcastEvent(const Event::Task& task) {
-    for(auto iter = container.begin(); iter != container.end(); iter++) {
-        iter->second->addTask(task);
+    for(auto & iter : container) {
+        iter.second->addTask(task);
     }
 }
 
@@ -62,4 +61,4 @@ std::shared_ptr<OS::UnixThread>& UnixThreadContainer::getThread(int index) {
      return iter->second;
 }
 }
-}
+
